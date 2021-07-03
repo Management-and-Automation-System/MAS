@@ -70,6 +70,7 @@ void Revenue ::calcRevenue(DataIter const &it , long const &c_quantity)
     double finalCost = 0;
     double basePrice = it->getCost();
     double profitPercent = it->getProfitMargin();
+    profitPercent /= 100;
     finalCost += (basePrice) + (basePrice * m_gst) + (basePrice * m_roadtax) + (basePrice * profitPercent);
     m_sales[it->getCompany()] += finalCost;
     m_profit[it->getCompany()] += (basePrice * profitPercent);

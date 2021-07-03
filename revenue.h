@@ -20,7 +20,7 @@ class Revenue : public Vehicle, public dbms
     // std::unordered_map<std::string, std::pair<double , double>> m_locTax; //We could do this for different locations or are these taxes same all over India?
 
 public:
-    Revenue(double const & gst = 0.18 , double const & roadtax = 0.16);
+    Revenue(double const & gst = 0.28 , double const & roadtax = 0.16);
     void searchCompany(std::string const &);
     void searchModel(std::string const &, DataIterVec const &);
     void searchRange(float const &, float const &);

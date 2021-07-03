@@ -71,6 +71,22 @@ void clrscr()
     cout << "\033[2J\033[1;1H";
 }
 
+namespace mainm
+{
+void help()
+{
+
+    cout << "Command: dsys" << '\n';
+    cout << "   Open the Database Section" << '\n';
+    cout << "Command: rsys" << '\n';
+    cout << "   Open the Revenue Section" << '\n';
+    cout << "Command: help" << '\n';
+    cout << "   Print this menu" << '\n';
+    cout << "Command: clear" << '\n';
+    cout << "   Clear the screen" << '\n';
+}
+}
+
 namespace dbm
 {
 std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = "Please Choose a Serial Number: ")
@@ -101,7 +117,6 @@ std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = 
     }
     break;
     }
-
     display(n_obj);
     if (!n_obj.empty())
     {
@@ -118,6 +133,12 @@ std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = 
 }
 void edit()
 {
+    auto it = dbm::search(1 , "Enter Serial No.");
+    cout << "Enter the new Value for Company: ";
+    string comp;
+    cin >> comp;
+    if(it.second)
+        db.editByCompany(it.first , comp);
 }
 void ins()
 {
@@ -153,15 +174,111 @@ void sell() //Check This Out!
     auto it = dbm::search(1, "Which Vehicle Would You Like to buy(Serial Number): ");
     if (it.second)
     {
-        int sr;
-        std::cin >> sr;
-        db.calcRevenue(it.first, sr);
+        int quantity;
+        cout << "Please Enter Quantity: ";
+        cin >> quantity;
+        db.calcRevenue(it.first, quantity);
     }
 }
 }
 
-void dbms_menu(void (*parent_menu)() = nullptr) //The argument is a function-pointer look up function pointers
+void dbms_menu();
+void rev_menu()
 {
+    bool active = 1;
+    enum
+    {
+        sell,
+        clear,
+        up
+    };
+    std::map<string, int> revCases {
+        { "sell", sell },
+        { "clear", clear },
+        { "up", up }
+    };
+    while (active)
+    {
+        string choice;
+        cout << "revenue> ";
+        cin >> choice;
+        switch (revCases.at(choice))
+        {
+        case sell:
+        {
+            rev::sell();
+            break;
+        }
+        case up:
+        {
+            active = 0;
+            break;
+        }
+        case clear:
+        {
+            clrscr();
+            break;
+        }
+        }
+    }
+}
+void main_menu()
+{
+    bool active = 1;
+    enum
+    {
+        dbms = 1,
+        revenue,
+        help,
+        clear,
+        up
+    };
+    std::map<string, int> mainCases {
+        { "help", help },
+        { "dsys", dbms },
+        { "rsys", revenue },
+        { "clear", clear },
+        { "up", up }
+    };
+    while (active)
+    {
+        string choice;
+        cout << "ams> ";
+        cin >> choice;
+        switch (mainCases.at(choice))
+        {
+        case dbms:
+        {
+            dbms_menu();
+            break;
+        }
+        case revenue:
+        {
+            rev_menu();
+            break;
+        }
+        case help:
+        {
+            mainm::help();
+            break;
+        }
+        case clear:
+        {
+            clrscr();
+            break;
+        }
+        case up:
+        {
+            active = 0;
+            break;
+        }
+        }
+    }
+}
+
+void dbms_menu()
+{
+    bool active = 1;
     enum
     {
         insert = 1,
@@ -179,15 +296,15 @@ void dbms_menu(void (*parent_menu)() = nullptr) //The argument is a function-poi
         { "edit", edit },
         { "remove", rem },
         { "up", up },
-        { "clear" , clear}
+        { "clear", clear }
     };
     dbm::help();
-    while (1)
+    while (active)
     {
         std::string choice;
         cout << "dbms> ";
         cin >> choice;
-        switch (dbmsCases[choice])
+        switch (dbmsCases.at(choice))
         {
         case help:
         {
@@ -216,6 +333,7 @@ void dbms_menu(void (*parent_menu)() = nullptr) //The argument is a function-poi
         }
         case up:
         {
+            active = 0;
             break;
         }
         case clear:
@@ -229,36 +347,14 @@ void dbms_menu(void (*parent_menu)() = nullptr) //The argument is a function-poi
 
 int main()
 {
-
-    cout << "1 -> DATABASE MANAGEMENT SECTION\n";
-    cout << "2 -> REVENUE SECTION\n";
-    int section;
-    cin >> section;
-    //Use a map and enum maybe?
-    char ch = 'Y';
-    while (ch == 'Y')
+    while (1)
     {
-        switch (section)
+        try
         {
-        case 1:
+            main_menu();
+        }
+        catch (...)
         {
-            dbms_menu();
-        }
-        case 2:
-        {
-            int choice;
-            cout << "1 -> SELL\n"; //Reference only feel free to change
-            cin >> choice;
-            switch (choice)
-            {
-            case 1:
-            {
-                rev::sell();
-            }
-            }
-        }
-        }
-        cout << "WANT TO CONTINUE?(Y/N)?\n";
-        cin >> ch;
+        };
     }
 }
