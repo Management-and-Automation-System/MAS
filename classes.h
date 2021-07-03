@@ -61,8 +61,6 @@ public:
 class dbms
 {
 protected:
-    using DataIter = std::list<Vehicle>::iterator;
-    using DataIterVec = std::vector<DataIter>;
     std::list<Vehicle> m_data;
     std::vector<History> m_undoHistory;
     std::vector<History> m_redoHistory;
@@ -70,6 +68,8 @@ protected:
     void pushToRedo();
 
 public:
+    using DataIter = std::list<Vehicle>::iterator;
+    using DataIterVec = std::vector<DataIter>;
     DataIter insert(Vehicle const &, bool = 0);
     DataIterVec search(Vehicle const &);
     DataIterVec searchByCompany(std::string const &);

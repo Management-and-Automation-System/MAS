@@ -2,7 +2,9 @@
 #include "classes.h"
 using namespace std;
 
-Revenue ::Revenue(){};
+Revenue::Revenue(double const &gst , double const &roadtax)
+    : m_gst(gst) , m_roadtax(roadtax) {};
+/*
 void Revenue ::searchCompany(std::string const &company)
 {
     DataIterVec res = searchByCompany(company);
@@ -62,16 +64,19 @@ void Revenue ::searchRange(float const &lb, float const &ub)
         cout << "NO MODEL FOUND\n";
     }
 }
-void Revenue ::calcRevenue(std::string const &model, long c_quantity, DataIter const &it)
+*/
+void Revenue ::calcRevenue(DataIter const &it , long const &c_quantity)
 {
-    float finalCost = 0;
-    float basePrice = it->getCost();
-    float GST = 0.28, roadTax = 0.16, profitPercent = it->getProfitMargin();
-    finalCost += (basePrice) + (basePrice * GST) + (basePrice * roadTax) + (basePrice * profitPercent);
-    sales[it->getCompany()] += finalCost;
-    profit[it->getCompany()] += (basePrice * profitPercent);
+    double finalCost = 0;
+    double basePrice = it->getCost();
+    double profitPercent = it->getProfitMargin();
+    finalCost += (basePrice) + (basePrice * m_gst) + (basePrice * m_roadtax) + (basePrice * profitPercent);
+    m_sales[it->getCompany()] += finalCost;
+    m_profit[it->getCompany()] += (basePrice * profitPercent);
+    /*
     cout << setw(15) << "GST" << setw(15) << "ROAD TAX" << setw(15) << "OTHER TAXES" << setw(15) << "FINAL COST\n";
-    cout << setw(15) << GST << setw(15) << roadTax << setw(15) << profitPercent << setw(15) << finalCost << "\n";
+    cout << setw(15) << m_gst << setw(15) << m_roadtax << setw(15) << profitPercent << setw(15) << finalCost << "\n";
+    */
     editByQuantity(it, it->getQuantity() - c_quantity);
 }
 void Revenue ::disp(DataIterVec const &obj)
