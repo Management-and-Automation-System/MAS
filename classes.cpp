@@ -1,10 +1,14 @@
 #include "classes.h"
+#include <fstream>
+#include <istream>
+#include <ostream>
+#include <string>
 #include <vector>
 
 using namespace std;
-Vehicle ::Vehicle(){};
-Vehicle ::Vehicle(string const &company, string const &modelName, vector<string> const &attributes, long const &quantity, float const &cost, float const &profitMargin)
-    : m_company(company), m_modelName(modelName), m_attributes(attributes), m_quantity(quantity), m_cost(cost), m_profitMargin(profitMargin) {}
+Vehicle ::Vehicle() = default;
+Vehicle ::Vehicle(string const& company, string const& modelName, vector<string> const& attributes, long const& quantity, double const& cost, double const& profitMargin)
+    : m_company(company), m_modelName(modelName), m_attributes(attributes), m_quantity(quantity), m_cost(cost), m_profitMargin(profitMargin) { }
 string Vehicle::getCompany() const
 {
     return m_company;
@@ -21,11 +25,11 @@ long Vehicle ::getQuantity() const
 {
     return m_quantity;
 }
-float Vehicle::getCost() const
+double Vehicle::getCost() const
 {
     return m_cost;
 }
-float Vehicle::getProfitMargin() const
+double Vehicle::getProfitMargin() const
 {
     return m_profitMargin;
 }
@@ -37,31 +41,31 @@ void Vehicle::setModel()
 {
     m_modelName = "";
 }
-void Vehicle::setCompany(string const &company)
+void Vehicle::setCompany(string const& company)
 {
     m_company = company;
 }
-void Vehicle::setModel(string const &modelName)
+void Vehicle::setModel(string const& modelName)
 {
     m_modelName = modelName;
 }
-void Vehicle::setAttributes(vector<string> const &attributes)
+void Vehicle::setAttributes(vector<string> const& attributes)
 {
     m_attributes = attributes;
 }
-void Vehicle::setQuantity(long const &quantity)
+void Vehicle::setQuantity(long const& quantity)
 {
     m_quantity = quantity;
 }
-void Vehicle::setCost(float const &cost)
+void Vehicle::setCost(double const& cost)
 {
     m_cost = cost;
 }
-void Vehicle::setProfitMargin(float const &profitMargin)
+void Vehicle::setProfitMargin(double const& profitMargin)
 {
     m_profitMargin = profitMargin;
 }
-bool Vehicle::operator==(Vehicle const &other) const
+bool Vehicle::operator==(Vehicle const& other) const
 {
     if (m_company != other.m_company)
         return false;
@@ -76,19 +80,22 @@ bool Vehicle::operator==(Vehicle const &other) const
 
 History::History() = default;
 History::History(std::list<Vehicle>::iterator absPos, char deletiness, std::list<Vehicle>::iterator oldPos = std::list<Vehicle>::iterator())
-    : Vehicle(*absPos), m_deletiness(deletiness), m_absPos(absPos), m_oldPos(oldPos) {}
+    : Vehicle(*absPos), m_deletiness(deletiness), m_absPos(absPos), m_oldPos(oldPos) { }
 
-dbms::DataIter dbms::insert(Vehicle const &vehicle, bool redoing)
+dbms::DataIter dbms::insert(Vehicle const& vehicle, bool redoing, bool noproc)
 {
     m_data.push_back(vehicle);
     auto temp = --m_data.end();
-    if (!redoing)
-        m_redoHistory.clear();
-    m_undoHistory.emplace_back(temp, 2);
+    if (!noproc)
+    {
+        if (!redoing)
+            m_redoHistory.clear();
+        m_undoHistory.emplace_back(temp, 2);
+    }
     return temp;
 }
 
-dbms::DataIterVec dbms::search(Vehicle const &vehicle)
+dbms::DataIterVec dbms::search(Vehicle const& vehicle)
 {
     DataIterVec result;
     for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
@@ -98,7 +105,7 @@ dbms::DataIterVec dbms::search(Vehicle const &vehicle)
     }
     return result;
 }
-dbms::DataIterVec dbms::searchByCompany(std::string const &comapny)
+dbms::DataIterVec dbms::searchByCompany(std::string const& comapny)
 {
     DataIterVec result;
     for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
@@ -108,7 +115,7 @@ dbms::DataIterVec dbms::searchByCompany(std::string const &comapny)
     }
     return result;
 }
-dbms::DataIterVec dbms::searchByModel(std::string const &model)
+dbms::DataIterVec dbms::searchByModel(std::string const& model)
 {
     DataIterVec result;
     for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
@@ -118,7 +125,7 @@ dbms::DataIterVec dbms::searchByModel(std::string const &model)
     }
     return result;
 }
-dbms::DataIterVec dbms::searchByAttribute(std::vector<std::string> const &attributes)
+dbms::DataIterVec dbms::searchByAttribute(std::vector<std::string> const& attributes)
 {
     DataIterVec result;
     for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
@@ -128,7 +135,7 @@ dbms::DataIterVec dbms::searchByAttribute(std::vector<std::string> const &attrib
     }
     return result;
 }
-dbms::DataIterVec dbms::searchByQuantity(long const &quantity)
+dbms::DataIterVec dbms::searchByQuantity(long const& quantity)
 {
     DataIterVec result;
     for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
@@ -138,7 +145,7 @@ dbms::DataIterVec dbms::searchByQuantity(long const &quantity)
     }
     return result;
 }
-dbms ::DataIterVec dbms ::searchByRange(float const &lb, float const &ub)
+dbms ::DataIterVec dbms ::searchByRange(double const& lb, double const& ub)
 {
     DataIterVec result;
     for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
@@ -148,51 +155,69 @@ dbms ::DataIterVec dbms ::searchByRange(float const &lb, float const &ub)
     }
     return result;
 }
-dbms::DataIter dbms::edit(DataIter toChange, Vehicle const &change, bool redoing)
+dbms::DataIter dbms::edit(DataIter toChange, Vehicle const& change, bool redoing, bool noproc)
 {
-    m_undoHistory.emplace_back(toChange, 0);
-    *toChange = change;
-    if (!redoing)
-        m_redoHistory.clear();
+    if (!noproc)
+    {
+        m_undoHistory.emplace_back(toChange, 0);
+        *toChange = change;
+        if (!redoing)
+            m_redoHistory.clear();
+    }
+    else
+        *toChange = change;
     return toChange;
 }
-dbms::DataIter dbms::editByCompany(DataIter toChange, std::string const &chComapny)
+dbms::DataIter dbms::editByCompany(DataIter toChange, std::string const& chComapny, bool redoing, bool noproc)
 {
     Vehicle temp(*toChange);
     temp.setCompany(chComapny);
     return edit(toChange, temp);
 }
-dbms::DataIter dbms::editByModel(DataIter toChange, std::string const &chModel)
+dbms::DataIter dbms::editByModel(DataIter toChange, std::string const& chModel, bool redoing, bool noproc)
 {
     Vehicle temp(*toChange);
     temp.setModel(chModel);
     return edit(toChange, temp);
 }
-dbms::DataIter dbms::editByAttributes(DataIter toChange, std::vector<std::string> const &chComapny)
+dbms::DataIter dbms::editByAttributes(DataIter toChange, std::vector<std::string> const& chComapny, bool redoing, bool noproc)
 {
     Vehicle temp(*toChange);
     temp.setAttributes(chComapny);
-    return edit(toChange, temp);
+    return edit(toChange, temp, redoing, noproc);
 }
-dbms::DataIter dbms::editByQuantity(DataIter toChange, long const &chComapny)
+dbms::DataIter dbms::editByQuantity(DataIter toChange, long const& chComapny, bool redoing, bool noproc)
 {
     Vehicle temp(*toChange);
     temp.setQuantity(chComapny);
-    return edit(toChange, temp);
+    return edit(toChange, temp, redoing, noproc);
 }
-dbms ::DataIter dbms::editProfitMargin(DataIter toChange, float const &newMargin)
+dbms ::DataIter dbms::editProfitMargin(DataIter toChange, double const& newMargin, bool redoing, bool noproc)
 {
     Vehicle temp(*toChange);
     temp.setProfitMargin(newMargin);
-    return edit(toChange, temp);
+    return edit(toChange, temp, redoing, noproc);
 }
-dbms::DataIter dbms::toDelete(DataIter toDel, bool redoing)
+dbms ::DataIter dbms::editByCost(DataIter toChange, double const& newCost, bool redoing, bool noproc)
 {
-    m_undoHistory.emplace_back(toDel, 1, toDel);
-    toDel = m_data.erase(toDel);
-    m_undoHistory.back().m_absPos = toDel;
-    if (!redoing)
-        m_redoHistory.clear();
+    Vehicle temp(*toChange);
+    temp.setCost(newCost);
+    return edit(toChange, temp, redoing, noproc);
+}
+dbms::DataIter dbms::toDelete(DataIter toDel, bool redoing, bool noproc)
+{
+    if (!noproc)
+    {
+        m_undoHistory.emplace_back(toDel, 1, toDel);
+        toDel = m_data.erase(toDel);
+        m_undoHistory.back().m_absPos = toDel;
+        if (!redoing)
+            m_redoHistory.clear();
+    }
+    else
+    {
+        toDel = m_data.erase(toDel);
+    }
     return toDel;
 }
 int dbms::undo()
@@ -205,6 +230,7 @@ int dbms::undo()
     {
     case 0:
     {
+        m_redoHistory.push_back(History(change.m_absPos, 0));
         *change.m_absPos = change;
         break;
     }
@@ -216,15 +242,16 @@ int dbms::undo()
             if (iter.m_absPos == change.m_oldPos)
                 iter.m_absPos = temp;
         }
+        m_redoHistory.push_back(History(temp, 1));
         break;
     }
     case 2:
     {
+        m_redoHistory.push_back(History(change.m_absPos, 2));
         m_data.erase(change.m_absPos);
         break;
     }
     }
-    m_redoHistory.push_back(std::move(change));
     return m_undoHistory.size();
 }
 
@@ -263,159 +290,62 @@ dbms::DataIter dbms::end()
     return m_data.end();
 }
 
-#if 0
-bool Search::searchByCompany(string company, Vehicle obj[], int size)
+bool dbms::load(std::istream& is)
 {
-    bool found = false;
-    for (int i = 0; i < size; i++)
+    is >> ws;
+    if (is.eof())
+        return false;
+    while (!is.eof())
     {
-        if (obj[i].getCompany() == company && obj[i].getCompany() != "")
+        is >> ws;
+        auto getline = [&]()
         {
-            found = true;
-            Display tempObj;
-            tempObj.displayRecord(&obj[i]);
+            string result;
+            for (char c = is.get(); c != '\n'; c = is.get())
+            {
+                if (c == EOF)
+                    break;
+                result.push_back(c);
+            }
+            return result;
+        };
+        std::string comp(getline()), model(getline());
+        long quantity;
+        vector<string> attr;
+        double cost, prof;
+        is >> quantity >> cost >> prof;
+        is >> ws;
+        for (int i = 0; i < ATTR; ++i)
+        {
+            attr.push_back(getline());
         }
+        insert(Vehicle(comp, model, attr, quantity, cost, prof), 0, 1);
     }
-    if (found)
-        return true;
-    return false;
-}
-bool Search::searchByModel(string modelName, Vehicle obj[], int size)
-{
-    bool found = false;
-    for (int i = 0; i < size; i++)
-    {
-        if (obj[i].getModelName() == modelName && obj[i].getModelName() != "")
-        {
-            found = true;
-            Display tempObj;
-            tempObj.displayRecord(&obj[i]);
-        }
-    }
-    if (found)
-        return true;
-    return false;
-}
-bool Search::searchByAttributes(vector<string> attributes, Vehicle obj[], int size)
-{
-    bool found = false;
-    Display tempObj;
-    for (int i = 0; i < size; i++)
-    {
-        int count = 0, j = 0;
-        for (auto& x : obj[i].getAttributes())
-        {
-            if (attributes[j++] == x)
-                count++;
-        }
-        if (count == 3)
-        {
-            found = true;
-            tempObj.displayRecord(&obj[i]);
-        }
-    }
-    if (found)
-        return true;
-    return false;
+    return true;
 }
 
-void Display::displayRecord(Vehicle* obj)
+bool dbms::save(std::ostream& os)
 {
-    if (obj->getCompany() != "" && obj->getModelName() != "")
+    for (auto iter : *this)
     {
-        cout << setw(15) << "COMPANY" << setw(15) << "MODEL" << setw(15) << "QUANTITY" << setw(15) << "QUANTITY\n";
-        cout << setw(15) << obj->getCompany() << setw(15) << obj->getModelName() << setw(15) << obj->getQuantity();
-        int flag = 0;
-        for (auto& x : obj->getAttributes())
-        {
-            if (!flag)
-            {
-                cout << setw(15) << x << '\n';
-                flag = 1;
-            }
-            else
-            {
-                cout << setw(60) << x << '\n';
-            }
-        }
+        os << iter.getCompany() << '\n'
+           << iter.getModelName() << '\n'
+           << iter.getQuantity() << '\n'
+           << iter.getCost() << '\n'
+           << iter.getProfitMargin() << '\n';
+        for (auto iter2 : iter.getAttributes())
+            os << iter2 << '\n';
     }
-    else
-    {
-        cout << "NO SUCH RECORD EXISTS\n";
-    }
+    return true;
 }
-void Display ::displayCompanies(Vehicle* obj, int size)
+
+bool dbms::save(std::string const& filename)
 {
-    cout << "COMPANIES\n";
-    for (int i = 0; i < size; i++)
-    {
-        if (obj->getCompany() != "")
-            cout << obj[i].getCompany() << '\n';
-    }
+    std::ofstream os(filename);
+    return save(os);
 }
-void Display ::displayCompanyAndQuantity(Vehicle obj[], int size)
+bool dbms::load(std::string const& filename)
 {
-    cout << setw(15) << "COMPANIES" << setw(15) << "QUANTITIES\n";
-    for (int i = 0; i < size; i++)
-    {
-        if (obj[i].getCompany() != "")
-            cout << setw(15) << obj[i].getCompany() << setw(15) << obj[i].getQuantity() << '\n';
-    }
+    std::ifstream is(filename);
+    return load(is);
 }
-void displayAll(Vehicle obj[], int size)
-{
-    for (int i = 0; i < size; i++)
-    {
-        if (obj[i].getCompany() != "" && obj[i].getModelName() != "")
-        {
-            cout << setw(15) << "COMPANY" << setw(15) << "MODEL" << setw(15) << "QUANTITY" << setw(15) << "QUANTITY\n";
-            cout << setw(15) << obj[i].getCompany() << setw(15) << obj[i].getModelName() << setw(15) << obj[i].getQuantity();
-            int flag = 0;
-            for (auto& x : obj[i].getAttributes())
-            {
-                if (!flag)
-                {
-                    cout << setw(15) << x << '\n';
-                    flag = 1;
-                }
-                else
-                {
-                    cout << setw(60) << x << '\n';
-                }
-            }
-        }
-    }
-}
-void Delete ::delByCompany(string company, Vehicle obj[], int size)
-{
-    for (int i = 0; i < size; i++)
-    {
-        if (company == obj[i].getCompany())
-        {
-            string s = obj[i].getCompany() + " " + obj[i].getModelName() + " " + to_string(obj[i].getQuantity());
-            for (auto& x : obj[i].getAttributes())
-            {
-                s = s + " " + x;
-            }
-            delHistory.push_back(s);
-            obj[i].setCompany();
-        }
-    }
-}
-void Delete ::delByModel(string model, Vehicle obj[], int size)
-{
-    for (int i = 0; i < size; i++)
-    {
-        if (m_company == obj[i].getModelName())
-        {
-            string s = obj[i].getCompany() + " " + obj[i].getModelName() + " " + to_string(obj[i].getQuantity());
-            for (auto& x : obj[i].getAttributes())
-            {
-                s = s + " " + x;
-            }
-            delHistory.push_back(s);
-            obj[i].setModel();
-        }
-    }
-}
-#endif

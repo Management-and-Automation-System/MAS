@@ -12,6 +12,8 @@
 #include <vector>
 #include <stack>
 
+#define ATTR 3
+
 class Vehicle;
 class History;
 class dbms;
@@ -23,26 +25,26 @@ protected:
     std::string m_modelName;
     std::vector<std::string> m_attributes; // only 3 attributes -> color, wheel size and milage
     long m_quantity;
-    float m_cost;
-    float m_profitMargin;
+    double m_cost;
+    double m_profitMargin;
 
 public:
     Vehicle();
-    Vehicle(std::string const &company, std::string const &modelName, std::vector<std::string> const &attributes, long const &quantiy, float const &cost, float const &profitMargin);
+    Vehicle(std::string const &company, std::string const &modelName, std::vector<std::string> const &attributes, long const &quantiy, double const &cost, double const &profitMargin);
     std::string getCompany() const;
     std::string getModelName() const;
     std::vector<std::string> getAttributes() const;
     long getQuantity() const;
-    float getCost() const;
-    float getProfitMargin() const;
+    double getCost() const;
+    double getProfitMargin() const;
     void setCompany();
     void setModel();
     void setCompany(std::string const &);
     void setModel(std::string const &);
     void setAttributes(std::vector<std::string> const &);
     void setQuantity(long const &);
-    void setCost(float const &);
-    void setProfitMargin(float const &);
+    void setCost(double const &);
+    void setProfitMargin(double const &);
     bool operator==(Vehicle const &other) const;
 };
 
@@ -70,22 +72,27 @@ protected:
 public:
     using DataIter = std::list<Vehicle>::iterator;
     using DataIterVec = std::vector<DataIter>;
-    DataIter insert(Vehicle const &, bool = 0);
+    DataIter insert(Vehicle const &, bool = 0 , bool = 0);
     DataIterVec search(Vehicle const &);
     DataIterVec searchByCompany(std::string const &);
     DataIterVec searchByModel(std::string const &);
     DataIterVec searchByAttribute(std::vector<std::string> const &);
     DataIterVec searchByQuantity(long const &);
-    DataIterVec searchByRange(float const &, float const &);
-    DataIter edit(DataIter, Vehicle const &, bool = 0);
-    DataIter editByCompany(DataIter, std::string const &);
-    DataIter editByModel(DataIter, std::string const &);
-    DataIter editByAttributes(DataIter, std::vector<std::string> const &);
-    DataIter editByQuantity(DataIter, long const &);
-    DataIter editProfitMargin(DataIter, float const &);
-    DataIter toDelete(DataIter, bool = 0);
+    DataIterVec searchByRange(double const &, double const &);
+    DataIter edit(DataIter, Vehicle const &, bool = 0 , bool = 0);
+    DataIter editByCompany(DataIter, std::string const & , bool = 0 , bool =0);
+    DataIter editByModel(DataIter, std::string const & , bool = 0 , bool = 0);
+    DataIter editByAttributes(DataIter, std::vector<std::string> const & , bool = 0 , bool = 0 );
+    DataIter editByQuantity(DataIter, long const & , bool = 0 , bool = 0);
+    DataIter editProfitMargin(DataIter, double const & , bool = 0 , bool = 0) ;
+    DataIter editByCost(DataIter, double const & , bool = 0 , bool = 0);
+    DataIter toDelete(DataIter, bool = 0, bool = 0);
     DataIter begin();
     DataIter end();
+    virtual bool load(std::string const &);
+    virtual bool save(std::string const &);
+    virtual bool load(std::istream &);
+    virtual bool save(std::ostream &);
     int undo();
     int redo();
 };

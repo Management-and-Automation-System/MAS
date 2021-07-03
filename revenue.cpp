@@ -48,7 +48,7 @@ void Revenue ::searchModel(std::string const &model, DataIterVec const &l_compan
     if (!found)
         cout << "MODEL NOT FOUND\n";
 }
-void Revenue ::searchRange(float const &lb, float const &ub)
+void Revenue ::searchRange(double const &lb, double const &ub)
 {
     DataIterVec res = searchByRange(lb, ub);
     if (!res.empty())
@@ -74,18 +74,5 @@ void Revenue ::calcRevenue(DataIter const &it , long const &c_quantity)
     finalCost += (basePrice) + (basePrice * m_gst) + (basePrice * m_roadtax) + (basePrice * profitPercent);
     m_sales[it->getCompany()] += finalCost;
     m_profit[it->getCompany()] += (basePrice * profitPercent);
-    /*
-    cout << setw(15) << "GST" << setw(15) << "ROAD TAX" << setw(15) << "OTHER TAXES" << setw(15) << "FINAL COST\n";
-    cout << setw(15) << m_gst << setw(15) << m_roadtax << setw(15) << profitPercent << setw(15) << finalCost << "\n";
-    */
-    editByQuantity(it, it->getQuantity() - c_quantity);
-}
-void Revenue ::disp(DataIterVec const &obj)
-{
-    cout << setw(15) << "COMPANY" << setw(15) << "MODEL" << setw(15) << "QUANTITY" << setw(15) << "QUANTITY\n";
-
-    for (auto const &it : obj)
-    {
-        cout << setw(15) << it->getCompany() << setw(15) << it->getModelName() << setw(15) << it->getQuantity();
-    }
+    editByQuantity(it, it->getQuantity() - c_quantity, 0 , 1);
 }
