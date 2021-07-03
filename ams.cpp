@@ -1,7 +1,7 @@
-#include "classes.h"
-#include "revenue.h"
 #include "classes.cpp"
+#include "classes.h"
 #include "revenue.cpp"
+#include "revenue.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -66,7 +66,13 @@ void display(DataIterVec const& n_obj)
         cout << "NO RECORD IN THE DATABASE TO BE DISPLAYED WITH GIVEN SPECIFICATIONS\n";
     }
 }
+void clrscr()
+{
+    cout << "\033[2J\033[1;1H";
+}
 
+namespace dbm
+{
 std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = "Please Choose a Serial Number: ")
 {
     cout << "1 -> SEARCH WITH FULL SPECIFICATIONS\n";
@@ -118,9 +124,33 @@ void ins()
     Vehicle obj = createObject();
     db.insert(obj);
 }
-void sell()
+void del()
 {
-    auto it = search(1, "Which Vehicle Would You Like to buy(Serial Number): ");
+}
+void help()
+{
+    cout << "Command: insert" << '\n';
+    cout << "   Insert Vehicle Data\n";
+    cout << "Command: search" << '\n';
+    cout << "   Search Vehicle Data\n";
+    cout << "Command: edit" << '\n';
+    cout << "   Edit Vehicle Data\n";
+    cout << "Command: del" << '\n';
+    cout << "   Delete Vehicle Data\n";
+    cout << "Command: up" << '\n';
+    cout << "   Go up a menu\n";
+    cout << "Command: help" << '\n';
+    cout << "   Print this menu" << '\n';
+    cout << "Command: clear" << '\n';
+    cout << "   Clear the screen" << '\n';
+}
+}
+
+namespace rev
+{
+void sell() //Check This Out!
+{
+    auto it = dbm::search(1, "Which Vehicle Would You Like to buy(Serial Number): ");
     if (it.second)
     {
         int sr;
@@ -128,8 +158,73 @@ void sell()
         db.calcRevenue(it.first, sr);
     }
 }
-void del()
+}
+
+void dbms_menu(void (*parent_menu)() = nullptr) //The argument is a function-pointer look up function pointers
 {
+    enum
+    {
+        insert = 1,
+        search,
+        edit,
+        rem,
+        up,
+        help,
+        clear
+    };
+    std::map<string, int> dbmsCases {
+        { "help", help },
+        { "insert", insert },
+        { "search", search },
+        { "edit", edit },
+        { "remove", rem },
+        { "up", up },
+        { "clear" , clear}
+    };
+    dbm::help();
+    while (1)
+    {
+        std::string choice;
+        cout << "dbms> ";
+        cin >> choice;
+        switch (dbmsCases[choice])
+        {
+        case help:
+        {
+            dbm::help();
+            break;
+        }
+        case insert:
+        {
+            dbm::ins();
+            break;
+        }
+        case search:
+        {
+            dbm::search(); //This means global namespace, we need this or the compiler gets confused between search in the enum and search the function
+            break;
+        }
+        case edit:
+        {
+            dbm::edit();
+            break;
+        }
+        case rem:
+        {
+            dbm::del();
+            break;
+        }
+        case up:
+        {
+            break;
+        }
+        case clear:
+        {
+            clrscr();
+            break;
+        }
+        }
+    }
 }
 
 int main()
@@ -139,6 +234,7 @@ int main()
     cout << "2 -> REVENUE SECTION\n";
     int section;
     cin >> section;
+    //Use a map and enum maybe?
     char ch = 'Y';
     while (ch == 'Y')
     {
@@ -146,41 +242,18 @@ int main()
         {
         case 1:
         {
-            cout << "1 -> INSERT VEHICLE DATA\n";
-            cout << "2 -> SEARCH VEHICLE DATA\n";
-            cout << "3 -> EDIT VEHICLE DATA\n";
-            cout << "4 -> DELETE VEHICLE DATA\n";
-            int choice;
-            cin >> choice;
-            switch (choice)
-            {
-            case 1:
-            {
-            }
-            break;
-            case 2:
-            {
-                search();
-            }
-            case 3:
-            {
-                for (auto iter : db)
-                {
-                    std::cout << iter.getCompany() << '\n';
-                }
-            }
-            }
+            dbms_menu();
         }
         case 2:
         {
             int choice;
-            cout << "1 -> SELL\n";  //Reference only feel free to change
+            cout << "1 -> SELL\n"; //Reference only feel free to change
             cin >> choice;
             switch (choice)
-             {
+            {
             case 1:
             {
-                sell();
+                rev::sell();
             }
             }
         }
