@@ -354,3 +354,8 @@ bool dbms::load(std::string const& filename)
     std::ifstream is(filename);
     return load(is);
 }
+
+bool dbms::empty()
+{
+    return m_data.empty();
+}

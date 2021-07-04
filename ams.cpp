@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-
 using namespace std;
 Revenue db;
 using DataIter = dbms::DataIter;
@@ -57,25 +56,27 @@ Vehicle createObject()
 
 void display(DataIterVec const& n_obj)
 {
+    int i = 1;
     if (!n_obj.empty())
     {
         for (auto const& obj : n_obj)
         {
-            cout << setw(15) << "COMPANY" << setw(15) << "MODEL" << setw(15) << "QUANTITY" << setw(15) << "QUANTITY\n";
-            cout << setw(15) << obj->getCompany() << setw(15) << obj->getModelName() << setw(15) << obj->getQuantity();
+            cout << setw(15) << "COMPANY" << setw(15) << "MODEL" << setw(15) << "QUANTITY" << setw(15) << "ATTRIBUTES\n";
+            cout << i++ << setw(15) << obj->getCompany() << setw(15) << obj->getModelName() << setw(15) << obj->getQuantity();
             int flag = 0;
             for (auto& x : obj->getAttributes())
             {
                 if (!flag)
                 {
-                    cout << setw(15) << x << '\n';
+                    cout << setw(10) << x;
                     flag = 1;
                 }
                 else
                 {
-                    cout << setw(60) << x << '\n';
+                    cout << setw(10) << x;
                 }
             }
+            cout << '\n';
         }
     }
     else
@@ -95,10 +96,13 @@ void save()
 }
 void load()
 {
-    cout << "Would you like to save first?(Y/N): ";
-    char ans;
-    cin >> ans;
-    ans = tolower(ans);
+    char ans = 'n';
+    if (!db.empty())
+    {
+        cout << "Would you like to save first?(Y/N): ";
+        cin >> ans;
+        ans = tolower(ans);
+    }
     flushCin();
     if (ans == 'y')
     {
@@ -343,6 +347,7 @@ void edit()
     {
         cout << "Enter which field to edit: \n";
         cout << "Fields to edit could be:\n        company\n        model\n        attributes\n        quantity\n        cost\n        margin\n        whole\n";
+        cout << "Type 'up' to exit without editing\n";
     };
     enum
     {
@@ -353,7 +358,8 @@ void edit()
         Cost,
         Margin,
         Whole,
-        Help
+        Help,
+        Up
     };
     static map<string, int> editCases {
         { "company", Company },
@@ -363,7 +369,8 @@ void edit()
         { "cost", Cost },
         { "margin", Margin },
         { "whole", Whole },
-        { "help", Help }
+        { "help", Help },
+        { "up", Up }
     };
     bool redo = 0;
     do
@@ -440,6 +447,10 @@ void edit()
                 help();
                 redo = 1;
                 break;
+            }
+            case Up:
+            {
+                return;
             }
             }
         }
@@ -556,73 +567,80 @@ void dbms_menu()
     std::cout << "Type 'help' to get a list of all valid commands\n";
     while (active)
     {
-        std::string choice;
-        cout << "dbms> ";
-        cin >> choice;
-        switch (dbmsCases.at(choice))
+        try
         {
-        case help:
+            std::string choice;
+            cout << "dbms> ";
+            cin >> choice;
+            switch (dbmsCases.at(choice))
+            {
+            case help:
+            {
+                dbm::help();
+                break;
+            }
+            case insert:
+            {
+                dbm::ins();
+                break;
+            }
+            case search:
+            {
+                dbm::search(); //This means global namespace, we need this or the compiler gets confused between search in the enum and search the function
+                break;
+            }
+            case edit:
+            {
+                dbm::edit();
+                break;
+            }
+            case rem:
+            {
+                dbm::del();
+                break;
+            }
+            case up:
+            {
+                active = 0;
+                break;
+            }
+            case clear:
+            {
+                clrscr();
+                break;
+            }
+            case ls:
+            {
+                dbm::printAll();
+                break;
+            }
+            case save:
+            {
+                ::save();
+                break;
+            }
+            case load:
+            {
+                ::load();
+                break;
+            }
+            case undo:
+            {
+                ::undo();
+                break;
+            }
+            case redo:
+            {
+                ::redo();
+                break;
+            }
+            }
+            flushCin();
+        }
+        catch (std::out_of_range& e)
         {
-            dbm::help();
-            break;
+            cout << "Invalid input, type 'help' to get a list of all valid commands\n";
         }
-        case insert:
-        {
-            dbm::ins();
-            break;
-        }
-        case search:
-        {
-            dbm::search(); //This means global namespace, we need this or the compiler gets confused between search in the enum and search the function
-            break;
-        }
-        case edit:
-        {
-            dbm::edit();
-            break;
-        }
-        case rem:
-        {
-            dbm::del();
-            break;
-        }
-        case up:
-        {
-            active = 0;
-            break;
-        }
-        case clear:
-        {
-            clrscr();
-            break;
-        }
-        case ls:
-        {
-            dbm::printAll();
-            break;
-        }
-        case save:
-        {
-            ::save();
-            break;
-        }
-        case load:
-        {
-            ::load();
-            break;
-        }
-        case undo:
-        {
-            ::undo();
-            break;
-        }
-        case redo:
-        {
-            ::redo();
-            break;
-        }
-        }
-        flushCin();
     }
 }
 void rev_menu()
@@ -693,58 +711,66 @@ void main_menu()
         { "undo", undo },
         { "redo", redo }
     };
+    cout << "Welcome to AMS! Type 'help' to get a list of all valid commands\n";
     while (active)
     {
-        string choice;
-        cout << "ams> ";
-        cin >> choice;
-        switch (mainCases.at(choice))
+        try
         {
-        case dbms:
-        {
-            dbms_menu();
-            break;
+            string choice;
+            cout << "ams> ";
+            cin >> choice;
+            switch (mainCases.at(choice))
+            {
+            case dbms:
+            {
+                dbms_menu();
+                break;
+            }
+            case revenue:
+            {
+                rev_menu();
+                break;
+            }
+            case help:
+            {
+                mainm::help();
+                break;
+            }
+            case clear:
+            {
+                clrscr();
+                break;
+            }
+            case up:
+            {
+                active = 0;
+                break;
+            }
+            case save:
+            {
+                ::save();
+                break;
+            }
+            case load:
+            {
+                ::load();
+                break;
+            }
+            case undo:
+            {
+                ::undo();
+                break;
+            }
+            case redo:
+            {
+                ::redo();
+                break;
+            }
+            }
         }
-        case revenue:
+        catch (std::out_of_range& e)
         {
-            rev_menu();
-            break;
-        }
-        case help:
-        {
-            mainm::help();
-            break;
-        }
-        case clear:
-        {
-            clrscr();
-            break;
-        }
-        case up:
-        {
-            active = 0;
-            break;
-        }
-        case save:
-        {
-            ::save();
-            break;
-        }
-        case load:
-        {
-            ::load();
-            break;
-        }
-        case undo:
-        {
-            ::undo();
-            break;
-        }
-        case redo:
-        {
-            ::redo();
-            break;
-        }
+            cout << "Invalid command, type 'help' to get a list of all valid commands\n";
         }
         flushCin();
     }

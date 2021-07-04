@@ -93,6 +93,7 @@ public:
     virtual bool save(std::string const &);
     virtual bool load(std::istream &);
     virtual bool save(std::ostream &);
+    virtual bool empty();
     int undo();
     int redo();
 };
