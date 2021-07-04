@@ -2,9 +2,9 @@
 #include <vector>
 
 using namespace std;
-Vehicle ::Vehicle(){};
-Vehicle ::Vehicle(string const &company, string const &modelName, vector<string> const &attributes, long const &quantity, float const &cost, float const &profitMargin)
-    : m_company(company), m_modelName(modelName), m_attributes(attributes), m_quantity(quantity), m_cost(cost), m_profitMargin(profitMargin) {}
+Vehicle ::Vehicle() {};
+Vehicle ::Vehicle(string const& company, string const& modelName, vector<string> const& attributes, long const& quantity, float const& cost, float const& profitMargin)
+    : m_company(company), m_modelName(modelName), m_attributes(attributes), m_quantity(quantity), m_cost(cost), m_profitMargin(profitMargin) { }
 string Vehicle::getCompany() const
 {
     return m_company;
@@ -37,31 +37,31 @@ void Vehicle::setModel()
 {
     m_modelName = "";
 }
-void Vehicle::setCompany(string const &company)
+void Vehicle::setCompany(string const& company)
 {
     m_company = company;
 }
-void Vehicle::setModel(string const &modelName)
+void Vehicle::setModel(string const& modelName)
 {
     m_modelName = modelName;
 }
-void Vehicle::setAttributes(vector<string> const &attributes)
+void Vehicle::setAttributes(vector<string> const& attributes)
 {
     m_attributes = attributes;
 }
-void Vehicle::setQuantity(long const &quantity)
+void Vehicle::setQuantity(long const& quantity)
 {
     m_quantity = quantity;
 }
-void Vehicle::setCost(float const &cost)
+void Vehicle::setCost(float const& cost)
 {
     m_cost = cost;
 }
-void Vehicle::setProfitMargin(float const &profitMargin)
+void Vehicle::setProfitMargin(float const& profitMargin)
 {
     m_profitMargin = profitMargin;
 }
-bool Vehicle::operator==(Vehicle const &other) const
+bool Vehicle::operator==(Vehicle const& other) const
 {
     if (m_company != other.m_company)
         return false;
@@ -76,9 +76,9 @@ bool Vehicle::operator==(Vehicle const &other) const
 
 History::History() = default;
 History::History(std::list<Vehicle>::iterator absPos, char deletiness, std::list<Vehicle>::iterator oldPos = std::list<Vehicle>::iterator())
-    : Vehicle(*absPos), m_deletiness(deletiness), m_absPos(absPos), m_oldPos(oldPos) {}
+    : Vehicle(*absPos), m_deletiness(deletiness), m_absPos(absPos), m_oldPos(oldPos) { }
 
-dbms::DataIter dbms::insert(Vehicle const &vehicle, bool redoing)
+dbms::DataIter dbms::insert(Vehicle const& vehicle, bool redoing)
 {
     m_data.push_back(vehicle);
     auto temp = --m_data.end();
@@ -87,8 +87,14 @@ dbms::DataIter dbms::insert(Vehicle const &vehicle, bool redoing)
     m_undoHistory.emplace_back(temp, 2);
     return temp;
 }
-
-dbms::DataIterVec dbms::search(Vehicle const &vehicle)
+dbms ::DataIterVec dbms::extractAll()
+{
+    DataIterVec result;
+    for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
+        result.push_back(iter);
+    return result;
+}
+dbms::DataIterVec dbms::search(Vehicle const& vehicle)
 {
     DataIterVec result;
     for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
@@ -98,7 +104,7 @@ dbms::DataIterVec dbms::search(Vehicle const &vehicle)
     }
     return result;
 }
-dbms::DataIterVec dbms::searchByCompany(std::string const &comapny)
+dbms::DataIterVec dbms::searchByCompany(std::string const& comapny)
 {
     DataIterVec result;
     for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
@@ -108,7 +114,7 @@ dbms::DataIterVec dbms::searchByCompany(std::string const &comapny)
     }
     return result;
 }
-dbms::DataIterVec dbms::searchByModel(std::string const &model)
+dbms::DataIterVec dbms::searchByModel(std::string const& model)
 {
     DataIterVec result;
     for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
@@ -118,7 +124,7 @@ dbms::DataIterVec dbms::searchByModel(std::string const &model)
     }
     return result;
 }
-dbms::DataIterVec dbms::searchByAttribute(std::vector<std::string> const &attributes)
+dbms::DataIterVec dbms::searchByAttribute(std::vector<std::string> const& attributes)
 {
     DataIterVec result;
     for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
@@ -128,7 +134,7 @@ dbms::DataIterVec dbms::searchByAttribute(std::vector<std::string> const &attrib
     }
     return result;
 }
-dbms::DataIterVec dbms::searchByQuantity(long const &quantity)
+dbms::DataIterVec dbms::searchByQuantity(long const& quantity)
 {
     DataIterVec result;
     for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
@@ -138,7 +144,7 @@ dbms::DataIterVec dbms::searchByQuantity(long const &quantity)
     }
     return result;
 }
-dbms ::DataIterVec dbms ::searchByRange(float const &lb, float const &ub)
+dbms ::DataIterVec dbms ::searchByRange(double const& lb, double const& ub)
 {
     DataIterVec result;
     for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
@@ -148,7 +154,7 @@ dbms ::DataIterVec dbms ::searchByRange(float const &lb, float const &ub)
     }
     return result;
 }
-dbms::DataIter dbms::edit(DataIter toChange, Vehicle const &change, bool redoing)
+dbms::DataIter dbms::edit(DataIter toChange, Vehicle const& change, bool redoing)
 {
     m_undoHistory.emplace_back(toChange, 0);
     *toChange = change;
@@ -156,31 +162,31 @@ dbms::DataIter dbms::edit(DataIter toChange, Vehicle const &change, bool redoing
         m_redoHistory.clear();
     return toChange;
 }
-dbms::DataIter dbms::editByCompany(DataIter toChange, std::string const &chComapny)
+dbms::DataIter dbms::editByCompany(DataIter toChange, std::string const& chComapny)
 {
     Vehicle temp(*toChange);
     temp.setCompany(chComapny);
     return edit(toChange, temp);
 }
-dbms::DataIter dbms::editByModel(DataIter toChange, std::string const &chModel)
+dbms::DataIter dbms::editByModel(DataIter toChange, std::string const& chModel)
 {
     Vehicle temp(*toChange);
     temp.setModel(chModel);
     return edit(toChange, temp);
 }
-dbms::DataIter dbms::editByAttributes(DataIter toChange, std::vector<std::string> const &chComapny)
+dbms::DataIter dbms::editByAttributes(DataIter toChange, std::vector<std::string> const& chComapny)
 {
     Vehicle temp(*toChange);
     temp.setAttributes(chComapny);
     return edit(toChange, temp);
 }
-dbms::DataIter dbms::editByQuantity(DataIter toChange, long const &chComapny)
+dbms::DataIter dbms::editByQuantity(DataIter toChange, long const& chComapny)
 {
     Vehicle temp(*toChange);
     temp.setQuantity(chComapny);
     return edit(toChange, temp);
 }
-dbms ::DataIter dbms::editProfitMargin(DataIter toChange, float const &newMargin)
+dbms ::DataIter dbms::editProfitMargin(DataIter toChange, float const& newMargin)
 {
     Vehicle temp(*toChange);
     temp.setProfitMargin(newMargin);
