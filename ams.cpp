@@ -4,12 +4,15 @@
 #include "revenue.h"
 #include <algorithm>
 #include <cctype>
+#include <csignal>
+#include <cstdlib>
 #include <limits>
 #include <map>
 #include <ostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
 
 using namespace std;
 Revenue db;
@@ -151,6 +154,8 @@ void help()
     cout << "   Print this menu" << '\n';
     cout << "Command: clear" << '\n';
     cout << "   Clear the screen" << '\n';
+    cout << "Command: CTRL+C\n";
+    cout << "   Quit the application\n";
 }
 }
 
@@ -187,6 +192,7 @@ std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = 
         cout << "Command: help\n";
         cout << "   Print this menu\n";
     };
+
     enum
     {
         Comapny = 1,
@@ -209,94 +215,117 @@ std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = 
         { "up", Up }
     };
     cout << "Type 'help' for a list of all search commands\n";
-    cout << "search> ";
-    string choice;
-    cin >> choice;
     DataIterVec n_obj;
-    switch (searchCases.at(choice))
+    bool redo = 0;
+    do
     {
-    case Whole:
-    {
-        Vehicle obj = createObject();
-        n_obj = db.search(obj);
-        break;
-    }
-    case Comapny:
-    {
-        string company;
-        cout << "Enter Company Name: ";
-        cin >> company;
-        n_obj = db.searchByCompany(company);
-        break;
-    }
-    case Model:
-    {
-        string model;
-        cout << "Enter Model Name: ";
-        cin >> model;
-        n_obj = db.searchByModel(model);
-        break;
-    }
-    case Quantity:
-    {
-        string quantity;
-        cout << "Enter Quantity: ";
-        cin >> quantity;
-        n_obj = db.searchByQuantity(Quantity);
-        break;
-    }
-    case Attributes:
-    {
-        vector<string> temp;
-        cout << "Enter Attributes(Color, Wheel Size, Milage): ";
-        for (int i = 0; i < ATTR; i++)
+        redo = 0;
+        string choice;
+        cout << "search> ";
+        cin >> choice;
+        try
         {
-            string tmp;
-            cin >> tmp;
-            temp.push_back(tmp);
+            switch (searchCases.at(choice))
+            {
+            case Whole:
+            {
+                Vehicle obj = createObject();
+                n_obj = db.search(obj);
+                break;
+            }
+            case Comapny:
+            {
+                string company;
+                cout << "Enter Company Name: ";
+                cin >> company;
+                n_obj = db.searchByCompany(company);
+                break;
+            }
+            case Model:
+            {
+                string model;
+                cout << "Enter Model Name: ";
+                cin >> model;
+                n_obj = db.searchByModel(model);
+                break;
+            }
+            case Quantity:
+            {
+                string quantity;
+                cout << "Enter Quantity: ";
+                cin >> quantity;
+                n_obj = db.searchByQuantity(Quantity);
+                break;
+            }
+            case Attributes:
+            {
+                vector<string> temp;
+                cout << "Enter Attributes(Color, Wheel Size, Milage): ";
+                for (int i = 0; i < ATTR; i++)
+                {
+                    string tmp;
+                    cin >> tmp;
+                    temp.push_back(tmp);
+                }
+                n_obj = db.searchByAttribute(temp);
+                break;
+            }
+            case Range:
+            {
+                long lb, ub;
+                cout << "Enter Lowest Price and Highest Price: ";
+                cin >> lb >> ub;
+                n_obj = db.searchByRange(lb, ub);
+                std::sort(n_obj.begin(), n_obj.end(), [](DataIter a, DataIter b)
+                    { return a->getCost() < b->getCost(); });
+                break;
+            }
+            case Up:
+            {
+                cout << "Returning to previous menu\n";
+                return { DataIter(), 0 };
+                break;
+            }
+            case Help:
+            {
+                help();
+                redo = 1;
+                break;
+            }
+            }
         }
-        n_obj = db.searchByAttribute(temp);
-        break;
-    }
-    case Range:
-    {
-        long lb, ub;
-        cout << "Enter Lowest Price and Highest Price: ";
-        cin >> lb >> ub;
-        n_obj = db.searchByRange(lb, ub);
-        std::sort(n_obj.begin(), n_obj.end(), [](DataIter a, DataIter b)
-            { return a->getCost() < b->getCost(); });
-        break;
-    case Up:
-    {
-        cout << "Returning to previous menu\n";
-        return { DataIter(), 0 };
-        break;
-    }
-    case Help:
-    {
-        help();
-    }
-    default:
-    {
-        cout << "Entered Command is invalid, type 'help' for list of valid commands. Returning to previous menu\n";
-        return { DataIter(), 0 };
-        break;
-    }
-    }
-    }
-    display(n_obj);
-    if (!n_obj.empty())
-    {
-        if (prompt_flg == 1)
+        catch (std::out_of_range& e)
         {
-            int sr;
-            cout << prompt_msg;
-            cin >> sr;
-            return { n_obj[sr - 1], 1 };
+            cout << "Entered Command is invalid, type 'help' for list of valid commands. Type 'up' to return to previous menu\n";
+            redo = 1;
         }
-        return { n_obj[0], 1 };
-    }
+        if (redo)
+            continue;
+        display(n_obj);
+        if (!n_obj.empty())
+        {
+            if (prompt_flg == 1)
+            {
+                int sr;
+                cout << prompt_msg;
+                cin >> sr;
+                return { n_obj[sr - 1], 1 };
+            }
+            return { n_obj[0], 1 };
+        }
+        else
+        {
+            flushCin();
+            cout << "Would you like to try again?(Y/N): ";
+            char ans;
+            cin >> ans;
+            ans = tolower(ans);
+            if (ans == 'y')
+                redo = 1;
+            else
+                redo = 0;
+        }
+    } while (redo);
     return { DataIter(), 0 };
 }
 void edit()
@@ -304,43 +333,51 @@ void edit()
     cout << "This action is reversible, type 'undo' to undo\n";
     cout << "Search a vehicle to edit: \n";
     auto it = dbm::search(1, "Choose a Vehicle: ");
-    if(!it.second)
+    if (!it.second)
     {
-        cout << "Returning to previous menu";
+        cout << "edit> Search returned no items...\n";
+        cout << "Returning to previous menu\n";
         return;
     }
-    bool redo = 0;
-    cout << "Enter which field to edit: \n";
-    cout << "Fields to edit could be:\n        company\n        model\n        attributes\n        quantity\n        cost\n        margin\n        whole\n";
-    cout << "Enter here: ";
+    auto help = []()
+    {
+        cout << "Enter which field to edit: \n";
+        cout << "Fields to edit could be:\n        company\n        model\n        attributes\n        quantity\n        cost\n        margin\n        whole\n";
+    };
     enum
     {
-        company = 1,
-        model,
-        attributes,
-        quantity,
-        cost,
-        margin,
-        whole
+        Company = 1,
+        Model,
+        Attributes,
+        Quantity,
+        Cost,
+        Margin,
+        Whole,
+        Help
     };
     static map<string, int> editCases {
-        { "company", company },
-        { "model", model },
-        { "attributes", attributes },
-        { "quantity", quantity },
-        { "cost", cost },
-        { "margin", margin },
-        { "whole", whole }
+        { "company", Company },
+        { "model", Model },
+        { "attributes", Attributes },
+        { "quantity", Quantity },
+        { "cost", Cost },
+        { "margin", Margin },
+        { "whole", Whole },
+        { "help", Help }
     };
-    string input;
-    cin >> input;
-    try
+    bool redo = 0;
+    do
     {
-        do
+        redo = 0;
+        try
         {
+            cout << "Type 'help' to print fields available for editing\n";
+            cout << "edit> ";
+            string input;
+            cin >> input;
             switch (editCases.at(input))
             {
-            case company:
+            case Company:
             {
                 std::string comp;
                 cout << "Enter New Company Name: ";
@@ -348,7 +385,7 @@ void edit()
                 db.editByCompany(it.first, comp);
                 break;
             }
-            case model:
+            case Model:
             {
                 std::string model;
                 cout << "Enter New Model Name: ";
@@ -356,7 +393,7 @@ void edit()
                 db.editByModel(it.first, model);
                 break;
             }
-            case attributes:
+            case Attributes:
             {
                 vector<string> attr;
                 cout << "Enter New Attributes(Color , Wheel Size , Milage): ";
@@ -369,7 +406,7 @@ void edit()
                 db.editByAttributes(it.first, attr);
                 break;
             }
-            case quantity:
+            case Quantity:
             {
                 long quantity;
                 cout << "Enter New Quantity: ";
@@ -377,7 +414,7 @@ void edit()
                 db.editByQuantity(it.first, quantity);
                 break;
             }
-            case cost:
+            case Cost:
             {
                 double cost;
                 cout << "Enter New Cost: ";
@@ -385,7 +422,7 @@ void edit()
                 db.editByCost(it.first, cost);
                 break;
             }
-            case margin:
+            case Margin:
             {
                 double margin;
                 cout << "Enter New Quantity: ";
@@ -393,19 +430,25 @@ void edit()
                 db.editByQuantity(it.first, margin);
                 break;
             }
-            case whole:
+            case Whole:
             {
                 db.edit(it.first, createObject());
                 break;
             }
+            case Help:
+            {
+                help();
+                redo = 1;
+                break;
             }
-        } while (redo);
-    }
-    catch (std::out_of_range& e)
-    {
-        std::cout << "Invalid Input, type 'up' to return to previous menu\n";
-        redo = 1;
-    }
+            }
+        }
+        catch (std::out_of_range& e)
+        {
+            std::cout << "Invalid Input, type 'up' to return to previous menu\n";
+            redo = 1;
+        }
+    } while (redo);
 }
 void ins()
 {
@@ -419,7 +462,16 @@ void del()
     auto it = dbm::search(1, "Choose a Vehicle: ");
     if (it.second)
     {
-        db.toDelete(it.first);
+        auto iter2 = it.first;
+        ++iter2;
+        if (db.toDelete(it.first) == iter2)
+            cout << "Deletion successful\n";
+        else
+            cout << "Could not delete, some error occurred\n";
+    }
+    else
+    {
+        cout << "Search returned no items... returning to previous menu\n";
     }
 }
 void help()
@@ -448,6 +500,8 @@ void help()
     cout << "   Print this menu" << '\n';
     cout << "Command: clear" << '\n';
     cout << "   Clear the screen" << '\n';
+    cout << "Command: CTRL+C\n";
+    cout << "   Quit the application\n";
 }
 }
 
@@ -696,8 +750,34 @@ void main_menu()
     }
 }
 
+void signalHandler(int signum)
+{
+    char c;
+    cout << "\nQuitting...\n"
+         << "Would You like to save?(Y/N): ";
+    flushCin();
+    cin >> c;
+    c = tolower(c);
+    bool redo = 0;
+    do
+    {
+        redo = 0;
+        if (c == 'y')
+            save();
+        else if (c == 'n')
+            ;
+        else
+        {
+            redo = 1;
+            cout << "Invalid input, try again\n";
+        }
+    } while (redo);
+    exit(0);
+}
+
 int main()
 {
+    signal(SIGINT, signalHandler);
     while (1)
     {
         try
