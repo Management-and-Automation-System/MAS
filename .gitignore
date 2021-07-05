@@ -3,3 +3,7 @@
 **/*.a
 **/*.so
 **/*.dll
+
+.vscode
+.clang-format
+sv.file

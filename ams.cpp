@@ -14,9 +14,43 @@
 #include <vector>
 
 using namespace std;
-Revenue db;
 using DataIter = dbms::DataIter;
 using DataIterVec = dbms::DataIterVec;
+Revenue db;
+
+//Declerations
+void flushCin();
+Vehicle createObject();
+void display();
+void save();
+void load();
+void clscr();
+void undo();
+void redo();
+void dbms_menu();
+void rev_menu();
+void main_menu();
+void signalHandler();
+
+namespace mainm
+{
+void help();
+}
+
+namespace dbm
+{
+void printall();
+std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = "Please Choose a Serial Number: ");
+void edit();
+void ins();
+void del();
+void help();
+}
+
+namespace revm
+{
+void sell();
+}
 
 void flushCin()
 {
@@ -172,7 +206,7 @@ void printAll()
         temp.push_back(it);
     display(temp);
 }
-std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = "Please Choose a Serial Number: ")
+std::pair<DataIter, bool> search(int prompt_flg, string const& prompt_msg)
 {
     auto help = [&]()
     {
@@ -516,7 +550,7 @@ void help()
 }
 }
 
-namespace rev
+namespace revm
 {
 void sell() //Check This Out!
 {
@@ -667,7 +701,7 @@ void rev_menu()
         {
         case sell:
         {
-            rev::sell();
+            revm::sell();
             break;
         }
         case up:
