@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <exception>
+#include <functional>
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
@@ -78,7 +79,7 @@ public:
     DataIterVec searchByModel(std::string const &);
     DataIterVec searchByAttribute(std::vector<std::string> const &);
     DataIterVec searchByQuantity(long const &);
-    DataIterVec searchByRange(double const &, double const &);
+    DataIterVec searchByRange(double const &, double const &, bool = 1);
     DataIter edit(DataIter, Vehicle const &, bool = 0 , bool = 0);
     DataIter editByCompany(DataIter, std::string const & , bool = 0 , bool =0);
     DataIter editByModel(DataIter, std::string const & , bool = 0 , bool = 0);

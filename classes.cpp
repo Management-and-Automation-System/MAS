@@ -1,4 +1,4 @@
-#include "classes.h"
+#include "classes.hpp"
 #include <fstream>
 #include <istream>
 #include <ostream>
@@ -145,7 +145,7 @@ dbms::DataIterVec dbms::searchByQuantity(long const& quantity)
     }
     return result;
 }
-dbms ::DataIterVec dbms ::searchByRange(double const& lb, double const& ub)
+dbms ::DataIterVec dbms ::searchByRange(double const& lb, double const& ub, bool asc)
 {
     DataIterVec result;
     for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
@@ -153,6 +153,14 @@ dbms ::DataIterVec dbms ::searchByRange(double const& lb, double const& ub)
         if (iter->getQuantity() >= lb && iter->getQuantity() <= ub)
             result.push_back(iter);
     }
+    auto compAsc = [](DataIter a, DataIter b)
+    { return a->getCost() > b->getCost(); };
+    auto compDsc = [&](DataIter a, DataIter b)
+    { return !compAsc(a, b); };
+    if (asc)
+        sort(result.begin(), result.end(), compAsc);
+    else
+        sort(result.begin(), result.end(), compDsc);
     return result;
 }
 dbms::DataIter dbms::edit(DataIter toChange, Vehicle const& change, bool redoing, bool noproc)
@@ -310,7 +318,7 @@ bool dbms::load(std::istream& is)
             return result;
         };
         is >> ws;
-        if(is.eof())
+        if (is.eof())
             break;
         std::string comp(getline()), model(getline());
         long quantity;
@@ -322,7 +330,7 @@ bool dbms::load(std::istream& is)
         {
             attr.push_back(getline());
         }
-        if(comp == "" || model == "" || attr.empty())
+        if (comp == "" || model == "" || attr.empty())
             return false;
         insert(Vehicle(comp, model, attr, quantity, cost, prof), 0, 1);
     }

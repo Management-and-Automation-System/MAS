@@ -1,5 +1,5 @@
-#include "revenue.h"
-#include "classes.h"
+#include "revenue.hpp"
+#include "classes.hpp"
 using namespace std;
 
 Revenue::Revenue(double const &gst , double const &roadtax)

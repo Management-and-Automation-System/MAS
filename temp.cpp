@@ -1,16 +1,20 @@
 #include "classes.cpp"
 #include "classes.hpp"
+#include "menu.hpp"
 #include "revenue.cpp"
 #include "revenue.hpp"
 #include <algorithm>
 #include <cctype>
 #include <csignal>
 #include <cstdlib>
+#include <functional>
 #include <limits>
 #include <map>
 #include <ostream>
 #include <stdexcept>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <vector>
 
 using namespace std;
@@ -20,7 +24,7 @@ Revenue db;
 
 //Declerations
 void flushCin();
-Vehicle createObject();
+Vehicle makeVehicle();
 void display();
 void save();
 void load();
@@ -54,38 +58,6 @@ void sell();
 
 void flushCin()
 {
-}
-
-Vehicle createObject()
-{
-    string company, model;
-    vector<string> attr;
-    long quantity;
-    double cost, prof;
-    cout << "Enter Company: ";
-    cin >> company;
-    flushCin();
-    cout << "Enter Model: ";
-    cin >> model;
-    flushCin();
-    cout << "Enter Attributes(Color, Wheel size, Milage): ";
-    for (int i = 0; i < ATTR; i++)
-    {
-        string s;
-        cin >> s;
-        attr.push_back(s);
-    }
-    flushCin();
-    cout << "Enter Quantity: ";
-    cin >> quantity;
-    flushCin();
-    cout << "Enter Cost: ";
-    cin >> cost;
-    flushCin();
-    cout << "Enter Profit Margin: ";
-    cin >> prof;
-    flushCin();
-    return Vehicle(company, model, attr, quantity, cost, prof);
 }
 
 void display(DataIterVec const& n_obj)
@@ -267,7 +239,7 @@ std::pair<DataIter, bool> search(int prompt_flg, string const& prompt_msg)
             {
             case Whole:
             {
-                Vehicle obj = createObject();
+                Vehicle obj = makeVehicle();
                 n_obj = db.search(obj);
                 break;
             }
@@ -473,7 +445,7 @@ void edit()
             }
             case Whole:
             {
-                db.edit(it.first, createObject());
+                db.edit(it.first, makeVehicle());
                 break;
             }
             case Help:
@@ -497,7 +469,7 @@ void edit()
 }
 void ins()
 {
-    Vehicle obj = createObject();
+    Vehicle obj = makeVehicle();
     db.insert(obj);
 }
 void del()
@@ -835,9 +807,228 @@ void signalHandler(int signum)
     exit(0);
 }
 
+string makeCompany()
+{
+    string res;
+    cout << "Enter Company: ";
+    cin >> ws;
+    getline(cin, res);
+    return res;
+}
+
+string makeModel()
+{
+    string res;
+    cout << "Enter Model: ";
+    cin >> ws;
+    getline(cin, res);
+    return res;
+}
+
+long makeQuant()
+{
+    long res;
+    cout << "Enter Quantity: ";
+    cin >> res;
+    return res;
+}
+
+double makeProf()
+{
+    double res;
+    cout << "Enter Profit Margin: ";
+    cin >> res;
+    return res;
+}
+
+double makeCost()
+{
+    double res;
+    cout << "Enter Cost: ";
+    cin >> res;
+    return res;
+}
+
+vector<string> makeAttr()
+{
+    vector<string> res;
+    cout << "Enter Attributes: \n";
+    for (int i = 0; i < ATTR; i++)
+    {
+        string tmp;
+        string toPrint = "\tEnter ";
+        switch (i)
+        {
+        case 0:
+            toPrint += "Color: ";
+            break;
+        case 1:
+            toPrint += "Wheel Size: ";
+            break;
+        case 2:
+            toPrint += "Milage: ";
+            break;
+        }
+        std::cout << toPrint;
+        cin >> ws;
+        getline(cin, tmp);
+        res.push_back(std::move(tmp));
+    }
+    return res;
+}
+Vehicle makeVehicle()
+{
+    auto company = makeCompany();
+    auto model = makeModel();
+    auto attr = makeAttr();
+    auto quant = makeQuant();
+    auto cost = makeCost();
+    auto prof = makeProf();
+    return Vehicle(company, model, attr, quant, cost, prof);
+}
+
 int main()
 {
-    signal(SIGINT, signalHandler);
+    /*
+    Menu<void(), void()> menu( "dbms",
+        MenuItem<void()>(dbm::ins, "insert" , "Insert an Element"),
+        MenuItem<void()>(dbm::edit, "edit" , "Edit an Element")
+    );
+    */
+    //Menu men = makeMenu("dbms" , makeMenuItem( function<void()>(dbm::ins), "insert" , "Insert an Element") , makeMenuItem(function<void()>(dbm::edit) , "edit" , "Edit an Element"));
+    auto search = makeChild(
+        makeMenu(
+            "search",
+            makeMenuItem(function<DataIterVec()>([&]()
+                             {
+                                 auto temp = db.searchByCompany(makeCompany());
+                                 display(temp);
+                                 return temp;
+                             }),
+                "company", "Sort vai Company"),
+            makeMenuItem(function<DataIterVec()>([&]()
+                             {
+                                 auto temp = db.searchByModel(makeCompany());
+                                 display(temp);
+                                 return temp;
+                             }),
+                "model", "Sort vai Model"),
+            makeMenuItem(function<DataIterVec()>([&]()
+                             {
+                                 auto temp = db.searchByAttribute(makeAttr());
+                                 display(temp);
+                                 return temp;
+                             }),
+                "attributes", "Sort vai attributes"),
+            makeMenuItem(function<DataIterVec()>([&]()
+                             {
+                                 auto temp = db.searchByQuantity(makeQuant());
+                                 display(temp);
+                                 return temp;
+                             }),
+                "quantity", "Search vai Quantity"),
+            makeMenuItem(function<DataIterVec()>([&]()
+                             {
+                                 double ub, lb;
+                                 cout << "Enter Lowerbound and Upperbound(seperated by whitespace): ";
+                                 cin >> ub >> lb;
+                                 auto temp = db.searchByRange(ub, lb);
+                                 display(temp);
+                                 return temp;
+                             }),
+                "range", "Sort vai Range of price"),
+            makeMenuItem(function<DataIterVec()>([&]()
+                             {
+                                 auto temp = db.search(makeVehicle());
+                                 display(temp);
+                                 return temp;
+                             }),
+                "whole", "Search using whole Object")),
+        "search", "Search through the database");
+    auto editSearch = [&]()
+    {
+        DataIterVec vec;
+        DataIter res;
+        int choice;
+        bool redo = 0;
+        int goodIn = 0;
+        cout << "Search a vehicle you would like to edit\n";
+        do
+        {
+            redo = 0;
+            auto res = search->getChild().input<0>(vec);
+            if (res == 1)
+            {
+                goodIn = 1;
+                redo = 0;
+                break;
+            }
+            else if (res == 0)
+            {
+                goodIn = 0;
+                redo = 1;
+                continue;
+            }
+            else if (res == -1)
+            {
+                goodIn = 0;
+                redo = 0;
+                break;
+            }
+        } while (redo);
+        if (goodIn)
+        {
+            cout << "Choose a vehicle you would like to edit(Serial Number): ";
+            do
+            {
+                cout << "Enter Choice: ";
+                cin >> choice;
+                redo = 0;
+                if (choice > (int)(vec.size()) || choice < -1)
+                {
+                    cout << "Invalid Choice. Try again or type '-1' to quit.\n";
+                    goodIn = 0;
+                    redo = 1;
+                }
+                else if (choice == -1)
+                {
+                    redo = 0;
+                    goodIn = 0;
+                    continue;
+                }
+                else
+                {
+                    goodIn = 1;
+                    res = vec[choice -1];
+                }
+            } while (redo);
+        }
+        return std::make_pair(res, goodIn);
+    };
+    auto edit = makeChild(
+        makeMenu(
+            "edit",
+            makeMenuItem(function<void()>([&]()
+                             {
+                                 auto it = editSearch();
+                                 if (it.second)
+                                     db.editByCompany(it.first, makeCompany());
+                             }),
+                "company", "Edit Company Field")),
+        "edit", "Editing Menu");
+    Menu menu = makeMenu("dbms",
+        makeMenuItem(std::function<void()>([&]()
+                         { db.insert(makeVehicle()); }),
+            "insert", "Insert a Vehicle"),
+        makeMenuItem(std::function<void()>([&]()
+                         { dbm::printAll(); }),
+            "list", "List all Vehicles in database"),
+        shared_ptr<MenuItem<int()>>(search),
+        shared_ptr<MenuItem<int()>>(edit));
+    menu.input();
+    //menu.input();
+    //signal(SIGINT, signalHandler);
+    /*
     while (1)
     {
         try
@@ -848,4 +1039,5 @@ int main()
         {
         };
     }
+    */
 }
