@@ -4,9 +4,6 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
-#include <string>
-#include <tuple>
-#include <type_traits>
 
 template <typename _T1, typename _T2>
 void assignment(_T1& t1, _T2 const& t2)

@@ -1,17 +1,10 @@
 #ifndef CLASSES_H
 #define CLASSES_H
 
-#include <algorithm>
 #include <exception>
 #include <functional>
-#include <iostream>
-#include <iomanip>
-#include <stdexcept>
 #include <string>
 #include <list>
-#include <sys/types.h>
-#include <vector>
-#include <stack>
 
 #define ATTR 3
 

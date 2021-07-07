@@ -1,15 +1,5 @@
 #ifndef REV_H
 #define REV_H
-
-#include <algorithm>
-#include <exception>
-#include <iostream>
-#include <iomanip>
-#include <stdexcept>
-#include <string>
-#include <list>
-#include <vector>
-#include <unordered_map>
 #include "classes.hpp"
 class Revenue : public Vehicle, public dbms
 {

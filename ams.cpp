@@ -1,10 +1,7 @@
 #include "classes.hpp"
 #include "menu.hpp"
 #include "revenue.hpp"
-#include <algorithm>
-#include <csignal>
-#include <functional>
-#include <iostream>
+#include <iomanip>
 
 using namespace std;
 using DataIter = dbms::DataIter;
