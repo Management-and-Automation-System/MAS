@@ -1,17 +1,12 @@
 #ifndef MENU_H
 #define MENU_H
-#include <utility>
-#include <cstddef>
 #include <functional>
-#include <iomanip>
 #include <iostream>
-#include <map>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <tuple>
 #include <type_traits>
-#include <vector>
 
 template <typename _T1, typename _T2>
 void assignment(_T1& t1, _T2 const& t2)
@@ -40,7 +35,7 @@ protected:
     std::function<_Ret(_Args...)> m_function;
 
 public:
-    MenuItem(std::function<_Ret(_Args...)> const &function, std::string const& command, std::string const& docs)
+    MenuItem(std::function<_Ret(_Args...)> const& function, std::string const& command, std::string const& docs)
         : m_function(function), m_command(command), m_docs(docs) {};
     virtual _Ret operator()(_Args... args)
     {
@@ -61,7 +56,7 @@ public:
     virtual ~MenuItem() = default;
 };
 
-template<typename... _Args>
+template <typename... _Args>
 class MenuItem<void(_Args...)>
 {
 protected:
@@ -69,7 +64,7 @@ protected:
     std::function<void(_Args...)> m_function;
 
 public:
-    MenuItem(std::function<void(_Args...)> const &function, std::string const& command, std::string const& docs)
+    MenuItem(std::function<void(_Args...)> const& function, std::string const& command, std::string const& docs)
         : m_function(function), m_command(command), m_docs(docs) {};
     virtual int operator()(_Args... args)
     {
@@ -93,7 +88,7 @@ public:
 };
 
 template <typename _Ret, typename... _Args>
-auto makeMenuItem(std::function<_Ret(_Args...)> const &function, std::string const& command, std::string const& docs)
+auto makeMenuItem(std::function<_Ret(_Args...)> const& function, std::string const& command, std::string const& docs)
 {
     return std::make_shared<MenuItem<_Ret(_Args...)>>(function, command, docs);
 }
@@ -138,8 +133,6 @@ auto makeChild(Menu<_Sigs...> const& child, std::string const& command, std::str
 template <typename... _Sigs>
 class Menu
 {
-    //using Children = std::vector<menu<args...>>;
-    //Children m_children;
     using Items = std::tuple<std::shared_ptr<MenuItem<_Sigs>>...>;
     std::string m_name;
     std::string m_help;
@@ -153,7 +146,6 @@ class Menu
         return ss.str();
     };
     std::function<void()> m_input_func = []() {};
-    //#ifdef CPP_17
     template <std::size_t _Iter = 0>
     constexpr void init()
     {
@@ -166,20 +158,19 @@ class Menu
             m_help += m_help_format("help or h", "Print help");
         };
     }
-    //#endif
 
 public:
     Menu(
-        std::string const& name, std::shared_ptr<MenuItem<_Sigs>> const&... args, bool redo = 1, std::function<void()> input_func = []() {},
-        std::string const& inv_command_msg = "Invalid command type 'help' to get a list of all valid commands")
+        std::string const& name, std::shared_ptr<MenuItem<_Sigs>> const&... args, std::function<void()> input_func = []() {},
+        std::string const& inv_command_msg = "Invalid command, type 'help' to get a list of all valid commands")
         : m_name(name), m_items(std::make_tuple(args...)), m_inv_command_msg(inv_command_msg), m_input_func(input_func)
     {
         init();
     };
     Menu(
         std::string const& name, std::shared_ptr<MenuItem<_Sigs>> const&... args, std::function<std::string(std::string, std::string)> const& help_format,
-        bool redo = 1, std::function<void()> input_func = []() {},
-        std::string const& inv_command_msg = "Invalid command type 'help' to get a list of all valid commands")
+        std::function<void()> input_func = []() {},
+        std::string const& inv_command_msg = "Invalid command, type 'help' to get a list of all valid commands")
         : m_name(name), m_items(std::make_tuple(args...)), m_help_format(help_format), m_inv_command_msg(inv_command_msg)
     {
         init();
@@ -188,7 +179,6 @@ public:
     {
         std::cout << m_help;
     }
-    //#ifdef CPP_17
     template <std::size_t _Iter = 0, typename _Arg = int>
     int exec(std::string const& command, _Arg& arg) const
     {
@@ -221,14 +211,13 @@ public:
             find<_Iter + 1>();
         }
     }
-    //#endif
     template <bool redo = 1, typename _Arg = int>
     int input(_Arg& arg) const
     {
+        m_input_func();
         int retVal = 0;
         do
         {
-            m_input_func();
             std::string in;
             std::cout << m_name << "> ";
             std::cin >> in;
@@ -249,7 +238,7 @@ public:
                 else
                     retVal = 0;
             }
-            else  
+            else
                 retVal = 1;
         } while (redo);
         return retVal;
@@ -268,26 +257,57 @@ public:
 };
 
 template <typename... _Sigs>
-Menu<_Sigs...> makeMenu(std::string const& name, std::shared_ptr<MenuItem<_Sigs>> const&... mitems)
+Menu<_Sigs...> makeMenu(
+    std::string const& name,
+    std::string const& inv_command_msg,
+    std::function<void()> input_func,
+    std::shared_ptr<MenuItem<_Sigs>> const&... mitems)
 {
-    return Menu<_Sigs...>(name, mitems...);
+    return Menu<_Sigs...>(name, mitems..., input_func, inv_command_msg);
+}
+template <typename... _Sigs>
+Menu<_Sigs...> makeMenu(
+    std::string const& name,
+    std::function<std::string(std::string, std::string)> const& help_format,
+    std::string const& inv_command_msg,
+    std::function<void()> input_func,
+    std::shared_ptr<MenuItem<_Sigs>> const&... mitems)
+{
+    return Menu<_Sigs...>(name, mitems..., help_format, input_func, inv_command_msg);
+}
+template <typename... _Sigs>
+Menu<_Sigs...> makeMenu(
+    std::string const& name,
+    std::shared_ptr<MenuItem<_Sigs>> const&... mitems)
+{
+    return Menu<_Sigs...>(name , mitems...);
+}
+template <typename... _Sigs>
+Menu<_Sigs...> makeMenu(
+    std::string const& name,
+    std::function<std::string(std::string, std::string)> const& help_format,
+    std::shared_ptr<MenuItem<_Sigs>> const&... mitems)
+
+{
+    return Menu<_Sigs...>(name , mitems... , help_format);
+}
+template <typename... _Sigs>
+Menu<_Sigs...> makeMenu(
+    std::string const& name,
+    std::string const& inv_command_msg,
+    std::shared_ptr<MenuItem<_Sigs>> const&... mitems)
+{
+    return Menu<_Sigs...>(name , mitems... , std::function<void()>([](){}), inv_command_msg);
+}
+template <typename... _Sigs>
+Menu<_Sigs...> makeMenu(
+    std::string const& name,
+    std::function<std::string(std::string, std::string)> const& help_format,
+    std::string const &inv_command_msg,
+    std::shared_ptr<MenuItem<_Sigs>> const&... mitems)
+
+{
+    return Menu<_Sigs...>(name , mitems... , help_format, std::function<void()>([](){}), inv_command_msg);
 }
 
 #endif
-
-/*
-#ifndef CPP_17
-    template <std::size_t _Iter = 0>
-    typename std::enable_if<(_Iter == sizeof...(_Sigs)), void>::type init()
-    {
-        return;
-    }
-    template <std::size_t _Iter = 0>
-    typename std::enable_if<(_Iter < sizeof...(_Sigs)), void>::type init()
-    {
-        m_help += m_help_format(std::get<_Iter>(m_items).getCommand(), std::get<_Iter>(m_items).getHelp());
-		m_cases[std::get<_Iter>(m_items).getCommand()] = _Iter;
-        init<_Iter + 1>();
-    }
-#endif
-*/
