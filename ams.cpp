@@ -1,17 +1,11 @@
-#include "classes.cpp"
-#include "classes.h"
-#include "revenue.cpp"
-#include "revenue.h"
+#include <iostream>
+#include <iomanip>
 #include <algorithm>
-#include <cctype>
-#include <csignal>
-#include <cstdlib>
-#include <limits>
 #include <map>
-#include <ostream>
-#include <stdexcept>
-#include <string>
-#include <vector>
+#include <csignal>
+#include "revenue.h"
+#include "classes.h"
+
 using namespace std;
 Revenue db;
 using DataIter = dbms::DataIter;
@@ -165,10 +159,7 @@ namespace dbm
 {
 void printAll()
 {
-    DataIterVec temp;
-    for (auto it = db.begin(); it != db.end(); ++it)
-        temp.push_back(it);
-    display(temp);
+    display(db.extractAll());
 }
 std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = "Please Choose a Serial Number: ")
 {
@@ -563,7 +554,6 @@ void dbms_menu()
         up,
         help,
         clear,
-        ls,
         save,
         load,
         disp,
@@ -579,7 +569,6 @@ void dbms_menu()
         { "del", del },
         { "up", up },
         { "clear", clear },
-        { "list", ls },
         { "save", save },
         { "load", load },
         { "disp", disp },
@@ -632,7 +621,7 @@ void dbms_menu()
                 clrscr();
                 break;
             }
-            case ls:
+            case disp:
             {
                 dbm::printAll();
                 break;
@@ -645,12 +634,6 @@ void dbms_menu()
             case load:
             {
                 ::load();
-                break;
-            }
-            case disp:
-            {
-                DataIterVec n_obj = db.extractAll();
-                display(n_obj);
                 break;
             }
             case undo:
@@ -684,12 +667,16 @@ void rev_menu()
     {
         help,
         sell,
+        save,
+        load,
         clear,
         up
     };
     std::map<string, int> revCases {
         { "help", help },
         { "sell", sell },
+        {"save" , save},
+        {"load" , load},
         { "clear", clear },
         { "up", up }
     };
@@ -711,6 +698,16 @@ void rev_menu()
             case sell:
             {
                 rev::sell();
+                break;
+            }
+            case save:
+            {
+                ::save();
+                break;
+            }
+            case load:
+            {
+                ::load();
                 break;
             }
             case up:

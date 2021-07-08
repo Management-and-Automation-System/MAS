@@ -2,15 +2,8 @@
 #define REV_H
 
 #include "classes.h"
-#include <algorithm>
-#include <exception>
-#include <iomanip>
-#include <iostream>
 #include <list>
-#include <stdexcept>
-#include <string>
 #include <unordered_map>
-#include <vector>
 class Revenue : public Vehicle, public dbms
 {
     std ::unordered_map<std ::string, double> m_sales;
@@ -25,6 +18,11 @@ public:
     void searchRange(double const&, double const&);
     void calcRevenue(DataIter const&, long const&); // call the func -> editByQuantity(Dataiter, updated quantity)
     void disp(DataIterVec const&);
+    bool load(std::string const&) override;
+    bool save(std::string const&) override;
+    bool load(std::istream&) override;
+    bool save(std::ostream&) override;
+    ~Revenue() = default; 
 };
 
 #endif

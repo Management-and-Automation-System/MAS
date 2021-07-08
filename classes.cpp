@@ -1,9 +1,5 @@
 #include "classes.h"
 #include <fstream>
-#include <istream>
-#include <ostream>
-#include <string>
-#include <vector>
 
 using namespace std;
 Vehicle ::Vehicle() = default;
@@ -298,35 +294,62 @@ dbms::DataIter dbms::end()
 
 bool dbms::load(std::istream& is)
 {
+    m_data.clear();
+    m_redoHistory.clear();
+    m_undoHistory.clear();
     is >> ws;
     if (is.eof())
         return false;
-    while (!is.eof())
+    bool redo = 1;
+    while (!is.eof() && redo)
     {
-        is >> ws;
         auto getline = [&]()
         {
             string result;
-            for (char c = is.get(); c != '\n'; c = is.get())
-            {
-                if (c == EOF)
-                    break;
-                result.push_back(c);
-            }
+            std::getline(is, result);
             return result;
         };
         is >> ws;
         if (is.eof())
             break;
-        std::string comp(getline()), model(getline());
+        std::string comp, model;
         long quantity;
         vector<string> attr;
         double cost, prof;
-        is >> quantity >> cost >> prof;
-        is >> ws;
-        for (int i = 0; i < ATTR; ++i)
+        for (int i = 0; i < 5 + ATTR; ++i)
         {
-            attr.push_back(getline());
+            is >> ws;
+            std::string temp = getline();
+            if (temp == "---")
+            {
+                if (comp == "" || model == "" || attr.empty())
+                    return true;
+            }
+            if (i <= 4)
+            {
+                switch (i)
+                {
+                case 0:
+                    comp = temp;
+                    break;
+                case 1:
+                    model = temp;
+                    break;
+                case 2:
+                    quantity = stol(temp);
+                    break;
+                case 3:
+                    cost = stod(temp);
+                    break;
+                case 4:
+                    prof = stod(temp);
+                    break;
+                }
+            }
+            else
+            {
+                attr.push_back(temp);
+            }
         }
         if (comp == "" || model == "" || attr.empty())
             return false;
@@ -347,6 +370,7 @@ bool dbms::save(std::ostream& os)
         for (auto iter2 : iter.getAttributes())
             os << iter2 << '\n';
     }
+    os << "---" << '\n';
     return true;
 }
 

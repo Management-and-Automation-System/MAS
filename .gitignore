@@ -1,0 +1,7 @@
+.vscode
+bin
+**/*.out
+**/*.a
+**/*.dll
+**/*.exe
+.clang-format
