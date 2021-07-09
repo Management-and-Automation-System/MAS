@@ -5,8 +5,6 @@
 #include <csignal>
 #include "revenue.h"
 #include "classes.h"
-#include "classes.cpp"
-#include "revenue.cpp"
 
 using namespace std;
 Revenue db;

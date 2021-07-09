@@ -75,7 +75,7 @@ bool Vehicle::operator==(Vehicle const &other) const
 }
 
 History::History() = default;
-History::History(std::list<Vehicle>::iterator absPos, char deletiness, std::list<Vehicle>::iterator oldPos = std::list<Vehicle>::iterator())
+History::History(std::list<Vehicle>::iterator absPos, char deletiness, std::list<Vehicle>::iterator oldPos )
     : Vehicle(*absPos), m_deletiness(deletiness), m_absPos(absPos), m_oldPos(oldPos) {}
 dbms::DataIterVec dbms::extractAll()
 {
@@ -83,18 +83,6 @@ dbms::DataIterVec dbms::extractAll()
     for (auto iter = m_data.begin(); iter != m_data.end(); ++iter)
         res.push_back(iter);
     return res;
-}
-dbms::DataIter dbms::insert(Vehicle const &vehicle, bool redoing, bool noproc)
-{
-    m_data.push_back(vehicle);
-    auto temp = --m_data.end();
-    if (!noproc)
-    {
-        if (!redoing)
-            m_redoHistory.clear();
-        m_undoHistory.emplace_back(temp, 2);
-    }
-    return temp;
 }
 
 dbms::DataIterVec dbms::search(Vehicle const &vehicle)
@@ -157,71 +145,6 @@ dbms ::DataIterVec dbms ::searchByRange(double const &lb, double const &ub)
     }
     return result;
 }
-dbms::DataIter dbms::edit(DataIter toChange, Vehicle const &change, bool redoing, bool noproc)
-{
-    if (!noproc)
-    {
-        m_undoHistory.emplace_back(toChange, 0);
-        *toChange = change;
-        if (!redoing)
-            m_redoHistory.clear();
-    }
-    else
-        *toChange = change;
-    return toChange;
-}
-dbms::DataIter dbms::editByCompany(DataIter toChange, std::string const &chComapny, bool redoing, bool noproc)
-{
-    Vehicle temp(*toChange);
-    temp.setCompany(chComapny);
-    return edit(toChange, temp);
-}
-dbms::DataIter dbms::editByModel(DataIter toChange, std::string const &chModel, bool redoing, bool noproc)
-{
-    Vehicle temp(*toChange);
-    temp.setModel(chModel);
-    return edit(toChange, temp);
-}
-dbms::DataIter dbms::editByAttributes(DataIter toChange, std::vector<std::string> const &chComapny, bool redoing, bool noproc)
-{
-    Vehicle temp(*toChange);
-    temp.setAttributes(chComapny);
-    return edit(toChange, temp, redoing, noproc);
-}
-dbms::DataIter dbms::editByQuantity(DataIter toChange, long const &chComapny, bool redoing, bool noproc)
-{
-    Vehicle temp(*toChange);
-    temp.setQuantity(chComapny);
-    return edit(toChange, temp, redoing, noproc);
-}
-dbms ::DataIter dbms::editProfitMargin(DataIter toChange, double const &newMargin, bool redoing, bool noproc)
-{
-    Vehicle temp(*toChange);
-    temp.setProfitMargin(newMargin);
-    return edit(toChange, temp, redoing, noproc);
-}
-dbms ::DataIter dbms::editByCost(DataIter toChange, double const &newCost, bool redoing, bool noproc)
-{
-    Vehicle temp(*toChange);
-    temp.setCost(newCost);
-    return edit(toChange, temp, redoing, noproc);
-}
-dbms::DataIter dbms::toDelete(DataIter toDel, bool redoing, bool noproc)
-{
-    if (!noproc)
-    {
-        m_undoHistory.emplace_back(toDel, 1, toDel);
-        toDel = m_data.erase(toDel);
-        m_undoHistory.back().m_absPos = toDel;
-        if (!redoing)
-            m_redoHistory.clear();
-    }
-    else
-    {
-        toDel = m_data.erase(toDel);
-    }
-    return toDel;
-}
 int dbms::undo()
 {
     if (m_undoHistory.size() == 0)
@@ -267,17 +190,17 @@ int dbms::redo()
     {
     case 0:
     {
-        edit(change.m_absPos, change, 1);
+        edit<1>(change.m_absPos, change);
         break;
     }
     case 1:
     {
-        toDelete(change.m_absPos, 1);
+        toDelete<1>(change.m_absPos);
         break;
     }
     case 2:
     {
-        insert(change, 1);
+        insert<1>(change);
         break;
     }
     }
@@ -307,6 +230,8 @@ bool dbms::load(std::istream &is)
         {
             string result;
             std::getline(is, result);
+            if(result.back() == '\r')
+                result.pop_back();
             return result;
         };
         is >> ws;
@@ -353,7 +278,7 @@ bool dbms::load(std::istream &is)
         };
         if (comp == "" || model == "" || attr.empty())
             return false;
-        insert(Vehicle(comp, model, attr, quantity, cost, prof), 0, 1);
+        insert<0, 1>(Vehicle(comp, model, attr, quantity, cost, prof));
     }
     return true;
 }

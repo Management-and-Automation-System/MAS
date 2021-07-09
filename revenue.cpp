@@ -1,11 +1,14 @@
 #include "revenue.h"
 #include "classes.h"
 #include <fstream>
+#include <iomanip>
 #include <iostream>
+
+
 using namespace std;
 
-Revenue::Revenue(double const &gst, double const &roadtax)
-    : m_gst(gst), m_roadtax(roadtax){};
+Revenue::Revenue(double const& gst, double const& roadtax)
+    : m_gst(gst), m_roadtax(roadtax) {};
 std ::unordered_map<std ::string, double> Revenue ::getSales() const
 {
     return m_sales;
@@ -14,7 +17,7 @@ std ::unordered_map<std ::string, double> Revenue ::getProfit() const
 {
     return m_profit;
 }
-void Revenue ::calcRevenue(DataIter const &it, long const &c_quantity)
+void Revenue ::calcRevenue(DataIter const& it, long const& c_quantity)
 {
     double basePrice = it->getCost();
     double profitPercent = it->getProfitMargin();
@@ -23,9 +26,9 @@ void Revenue ::calcRevenue(DataIter const &it, long const &c_quantity)
     finalCost *= c_quantity;
     m_sales[it->getCompany()] += finalCost;
     m_profit[it->getCompany()] += (basePrice * profitPercent);
-    editByQuantity(it, it->getQuantity() - c_quantity, 0, 1);
+    editByQuantity<0, 1>(it, it->getQuantity() - c_quantity);
 }
-void Revenue ::dispRev(std ::unordered_map<std ::string, double> const &sales, std ::unordered_map<std ::string, double> const &profit)
+void Revenue ::dispRev(std ::unordered_map<std ::string, double> const& sales, std ::unordered_map<std ::string, double> const& profit)
 {
     cout << "------------------SALES----------------------\n";
     cout << setw(15) << "COMAPANY NAME" << setw(15) << "SALES" << '\n';
@@ -40,7 +43,7 @@ void Revenue ::dispRev(std ::unordered_map<std ::string, double> const &sales, s
         cout << setw(15) << iter.first << setw(15) << iter.second << '\n';
     }
 }
-bool Revenue::save(std::ostream &os)
+bool Revenue::save(std::ostream& os)
 {
     dbms::save(os);
     os << m_sales.size() << '\n';
@@ -58,7 +61,7 @@ bool Revenue::save(std::ostream &os)
     return true;
 }
 
-bool Revenue::load(std::istream &is)
+bool Revenue::load(std::istream& is)
 {
     m_profit.clear();
     m_sales.clear();
@@ -103,12 +106,12 @@ bool Revenue::load(std::istream &is)
     return true;
 }
 
-bool Revenue::load(std::string const &filename)
+bool Revenue::load(std::string const& filename)
 {
     std::ifstream is(filename);
     return load(is);
 }
-bool Revenue::save(std::string const &filename)
+bool Revenue::save(std::string const& filename)
 {
     std::ofstream os(filename);
     return save(os);
