@@ -1,9 +1,7 @@
-**/*.exe
+.vscode
+bin
 **/*.out
 **/*.a
-**/*.so
 **/*.dll
-
-.vscode
+**/*.exe
 .clang-format
-sv.file

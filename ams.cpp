@@ -1,57 +1,16 @@
-#include "classes.cpp"
-#include "classes.h"
-#include "revenue.cpp"
-#include "revenue.h"
+#include <iostream>
+#include <iomanip>
 #include <algorithm>
-#include <cctype>
-#include <csignal>
-#include <cstdlib>
-#include <limits>
 #include <map>
-#include <ostream>
-#include <stdexcept>
-#include <string>
-#include <vector>
+#include <csignal>
+#include "revenue.h"
+#include "classes.h"
 
 using namespace std;
+Revenue db;
 using DataIter = dbms::DataIter;
 using DataIterVec = dbms::DataIterVec;
-Revenue db;
-
-//Declerations
-void flushCin();
-Vehicle createObject();
-void display();
-void save();
-void load();
-void clscr();
-void undo();
-void redo();
-void dbms_menu();
-void rev_menu();
-void main_menu();
-void signalHandler();
-
-namespace mainm
-{
-void help();
-}
-
-namespace dbm
-{
-void printall();
-std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = "Please Choose a Serial Number: ");
-void edit();
-void ins();
-void del();
-void help();
-}
-
-namespace revm
-{
-void sell();
-}
-
+void signalHandler(int);
 void flushCin()
 {
 }
@@ -87,7 +46,6 @@ Vehicle createObject()
     flushCin();
     return Vehicle(company, model, attr, quantity, cost, prof);
 }
-
 void display(DataIterVec const& n_obj)
 {
     int i = 1;
@@ -192,7 +150,7 @@ void help()
     cout << "   Print this menu" << '\n';
     cout << "Command: clear" << '\n';
     cout << "   Clear the screen" << '\n';
-    cout << "Command: CTRL+C\n";
+    cout << "Command: quit\n";
     cout << "   Quit the application\n";
 }
 }
@@ -201,29 +159,26 @@ namespace dbm
 {
 void printAll()
 {
-    DataIterVec temp;
-    for (auto it = db.begin(); it != db.end(); ++it)
-        temp.push_back(it);
-    display(temp);
+    display(db.extractAll());
 }
-std::pair<DataIter, bool> search(int prompt_flg, string const& prompt_msg)
+std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = "Please Choose a Serial Number: ")
 {
     auto help = [&]()
     {
         cout << "Command: company\n";
-        cout << "   Sort vai Company\n";
+        cout << "   Sort via Company\n";
         cout << "Command: model\n";
-        cout << "   Sort vai Model\n";
+        cout << "   Sort via Model\n";
         cout << "Command: price\n";
-        cout << "   Sort vai price\n";
+        cout << "   Sort via price\n";
         if (!prompt_flg)
         {
             cout << "Command: quantity\n";
-            cout << "   Sort vai Quantity\n";
+            cout << "   Sort via Quantity\n";
             cout << "Command: attributes\n";
-            cout << "   Sort vai Attributes\n";
+            cout << "   Sort via Attributes\n";
             cout << "Command: whole\n";
-            cout << "   Search vai all\n";
+            cout << "   Search via all\n";
         }
         cout << "Command: up\n";
         cout << "   Go Back\n";
@@ -537,6 +492,8 @@ void help()
     cout << "   Re-does an undone change\n";
     cout << "Command: load\n";
     cout << "   Tries to load from a file\n";
+    cout << "Command: disp" << '\n';
+    cout << "   Displays all records" << '\n';
     cout << "Command: save\n";
     cout << "   Tries to save current database in a file\n";
     cout << "Command: up" << '\n';
@@ -545,13 +502,31 @@ void help()
     cout << "   Print this menu" << '\n';
     cout << "Command: clear" << '\n';
     cout << "   Clear the screen" << '\n';
-    cout << "Command: CTRL+C\n";
-    cout << "   Quit the application\n";
+    cout << "Command: quit" << '\n';
+    cout << "   Quit the application" << '\n';
 }
+}
+void Revenue::receipt(DataIter const& n_obj, int const& quantity)
+{
+    cout << setw(10) << "COMPANY" << setw(15) << "MODEL" << setw(15) << "BASE PRICE" << setw(15) << "QUANTITY"
+         << setw(15) << "GST" << setw(15) << "ROAD TAX" << setw(15)
+         << "OTHER TAXES" << setw(15) << "FINAL COST" << '\n';
+    cout << setw(10) << n_obj->getCompany() << setw(15) << n_obj->getModelName()
+         << setw(15) << n_obj->getCost() << setw(15) << quantity << setw(15) << m_gst << setw(15)
+         << m_roadtax << setw(15) << n_obj->getProfitMargin() << setw(15) << finalCost << '\n';
+}
+namespace rev
+{
+void help()
+{
+    cout << "Command: sell" << '\n';
+    cout << "   Sell vehicle(s)" << '\n';
+    cout << "Command: clear" << '\n';
+    cout << "   Clear the screen" << '\n';
+    cout << "Command: up" << '\n';
+    cout << "   Go up a menu\n";
 }
 
-namespace revm
-{
 void sell() //Check This Out!
 {
     auto it = dbm::search(1, "Which Vehicle Would You Like to buy(Serial Number): ");
@@ -561,6 +536,7 @@ void sell() //Check This Out!
         cout << "Please Enter Quantity: ";
         cin >> quantity;
         db.calcRevenue(it.first, quantity);
+        db.receipt(it.first, quantity);
     }
 }
 }
@@ -574,29 +550,31 @@ void dbms_menu()
         insert = 1,
         search,
         edit,
-        rem,
+        del,
         up,
         help,
         clear,
-        ls,
         save,
         load,
+        disp,
         undo,
-        redo
+        redo,
+        quit
     };
     static std::map<string, int> dbmsCases {
         { "help", help },
         { "insert", insert },
         { "search", search },
         { "edit", edit },
-        { "delete", rem },
+        { "del", del },
         { "up", up },
         { "clear", clear },
-        { "list", ls },
         { "save", save },
         { "load", load },
+        { "disp", disp },
         { "undo", undo },
-        { "redo", redo }
+        { "redo", redo },
+        { "quit", quit }
     };
     std::cout << "Type 'help' to get a list of all valid commands\n";
     while (active)
@@ -628,7 +606,7 @@ void dbms_menu()
                 dbm::edit();
                 break;
             }
-            case rem:
+            case del:
             {
                 dbm::del();
                 break;
@@ -643,7 +621,7 @@ void dbms_menu()
                 clrscr();
                 break;
             }
-            case ls:
+            case disp:
             {
                 dbm::printAll();
                 break;
@@ -668,6 +646,10 @@ void dbms_menu()
                 ::redo();
                 break;
             }
+            case quit:
+            {
+                signalHandler(2);
+            }
             }
             flushCin();
         }
@@ -683,39 +665,68 @@ void rev_menu()
     bool active = 1;
     enum
     {
+        help,
         sell,
+        save,
+        load,
         clear,
         up
     };
     std::map<string, int> revCases {
+        { "help", help },
         { "sell", sell },
+        {"save" , save},
+        {"load" , load},
         { "clear", clear },
         { "up", up }
     };
+    std::cout << "Type 'help' to get a list of all valid commands\n";
     while (active)
     {
-        string choice;
-        cout << "revenue> ";
-        cin >> choice;
-        switch (revCases.at(choice))
+        try
         {
-        case sell:
+            string choice;
+            cout << "revenue> ";
+            cin >> choice;
+            switch (revCases.at(choice))
+            {
+            case help:
+            {
+                rev::help();
+                break;
+            }
+            case sell:
+            {
+                rev::sell();
+                break;
+            }
+            case save:
+            {
+                ::save();
+                break;
+            }
+            case load:
+            {
+                ::load();
+                break;
+            }
+            case up:
+            {
+                active = 0;
+                break;
+            }
+            case clear:
+            {
+                clrscr();
+                break;
+            }
+            }
+            flushCin();
+        }
+        catch (std::out_of_range& e)
         {
-            revm::sell();
-            break;
+            cout << "Invalid input, type 'help' to get a list of all valid commands\n";
         }
-        case up:
-        {
-            active = 0;
-            break;
-        }
-        case clear:
-        {
-            clrscr();
-            break;
-        }
-        }
-        flushCin();
     }
 }
 void main_menu()
@@ -732,7 +743,8 @@ void main_menu()
         clear,
         up,
         undo,
-        redo
+        redo,
+        quit
     };
     static std::map<string, int> mainCases {
         { "help", help },
@@ -743,7 +755,8 @@ void main_menu()
         { "clear", clear },
         { "up", up },
         { "undo", undo },
-        { "redo", redo }
+        { "redo", redo },
+        { "quit", quit }
     };
     cout << "Welcome to AMS! Type 'help' to get a list of all valid commands\n";
     while (active)
@@ -800,6 +813,10 @@ void main_menu()
                 ::redo();
                 break;
             }
+            case quit:
+            {
+                signalHandler(2);
+            }
             }
         }
         catch (std::out_of_range& e)
@@ -832,7 +849,7 @@ void signalHandler(int signum)
             cout << "Invalid input, try again\n";
         }
     } while (redo);
-    exit(0);
+    exit(signum);
 }
 
 int main()

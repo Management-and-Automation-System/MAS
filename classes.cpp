@@ -1,9 +1,5 @@
 #include "classes.h"
 #include <fstream>
-#include <istream>
-#include <ostream>
-#include <string>
-#include <vector>
 
 using namespace std;
 Vehicle ::Vehicle() = default;
@@ -81,7 +77,13 @@ bool Vehicle::operator==(Vehicle const& other) const
 History::History() = default;
 History::History(std::list<Vehicle>::iterator absPos, char deletiness, std::list<Vehicle>::iterator oldPos = std::list<Vehicle>::iterator())
     : Vehicle(*absPos), m_deletiness(deletiness), m_absPos(absPos), m_oldPos(oldPos) { }
-
+dbms::DataIterVec dbms::extractAll()
+{
+    DataIterVec res;
+    for (auto iter = m_data.begin(); iter != m_data.end(); ++iter)
+        res.push_back(iter);
+    return res;
+}
 dbms::DataIter dbms::insert(Vehicle const& vehicle, bool redoing, bool noproc)
 {
     m_data.push_back(vehicle);
@@ -292,20 +294,61 @@ dbms::DataIter dbms::end()
 
 bool dbms::load(std::istream& is)
 {
+    m_data.clear();
+    m_redoHistory.clear();
+    m_undoHistory.clear();
     is >> ws;
     if (is.eof())
         return false;
-    while (!is.eof())
+    bool redo = 1;
+    while (!is.eof() && redo)
     {
-        is >> ws;
         auto getline = [&]()
         {
             string result;
-            for (char c = is.get(); c != '\n'; c = is.get())
+            std::getline(is, result);
+            return result;
+        };
+        is >> ws;
+        if (is.eof())
+            break;
+        std::string comp, model;
+        long quantity;
+        vector<string> attr;
+        double cost, prof;
+        for (int i = 0; i < 5 + ATTR; ++i)
+        {
+            is >> ws;
+            std::string temp = getline();
+            if (temp == "---")
             {
-                if (c == EOF)
+                if (comp == "" || model == "" || attr.empty())
+                    return true;
+            }
+            if (i <= 4)
+            {
+                switch (i)
+                {
+                case 0:
+                    comp = temp;
                     break;
-                result.push_back(c);
+                case 1:
+                    model = temp;
+                    break;
+                case 2:
+                    quantity = stol(temp);
+                    break;
+                case 3:
+                    cost = stod(temp);
+                    break;
+                case 4:
+                    prof = stod(temp);
+                    break;
+                }
+            }
+            else
+            {
+                attr.push_back(temp);
             }
             return result;
         };
@@ -322,7 +365,7 @@ bool dbms::load(std::istream& is)
         {
             attr.push_back(getline());
         }
-        if(comp == "" || model == "" || attr.empty())
+        if (comp == "" || model == "" || attr.empty())
             return false;
         insert(Vehicle(comp, model, attr, quantity, cost, prof), 0, 1);
     }
@@ -341,6 +384,7 @@ bool dbms::save(std::ostream& os)
         for (auto iter2 : iter.getAttributes())
             os << iter2 << '\n';
     }
+    os << "---" << '\n';
     return true;
 }
 
