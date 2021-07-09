@@ -7,8 +7,6 @@
 
 #define ATTR 3
 
-#define ATTR 3
-
 class Vehicle;
 class History;
 class dbms;

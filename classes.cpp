@@ -350,21 +350,7 @@ bool dbms::load(std::istream& is)
             {
                 attr.push_back(temp);
             }
-            return result;
         };
-        is >> ws;
-        if(is.eof())
-            break;
-        std::string comp(getline()), model(getline());
-        long quantity;
-        vector<string> attr;
-        double cost, prof;
-        is >> quantity >> cost >> prof;
-        is >> ws;
-        for (int i = 0; i < ATTR; ++i)
-        {
-            attr.push_back(getline());
-        }
         if (comp == "" || model == "" || attr.empty())
             return false;
         insert(Vehicle(comp, model, attr, quantity, cost, prof), 0, 1);
