@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include "revenue.h"
 #include "classes.h"
+#include "rang.h"
 
 using namespace std;
 Revenue db;
@@ -131,24 +132,24 @@ namespace mainm
 {
     void help()
     {
-
-        cout << "Command: dsys" << '\n';
+        using rang::style;
+        cout << "Command: " << style::bold << "dsys" << style::reset <<'\n';
         cout << "   Open the Database Section" << '\n';
-        cout << "Command: rsys" << '\n';
+        cout << "Command: " << style::bold << "rsys" << style::reset <<'\n';
         cout << "   Open the Revenue Section" << '\n';
-        cout << "Command: undo\n";
+        cout << "Command: " << style::bold << "undo" << style::reset <<'\n';
         cout << "   Un-does a change\n";
-        cout << "Command: redo\n";
+        cout << "Command: " << style::bold << "redo" << style::reset <<'\n';
         cout << "   Re-does an undone change\n";
-        cout << "Command: load\n";
+        cout << "Command: " << style::bold << "load" << style::reset <<'\n';
         cout << "   Tries to load from a file\n";
-        cout << "Command: save\n";
+        cout << "Command: " << style::bold << "save" << style::reset <<'\n';
         cout << "   Tries to save current database in a file\n";
-        cout << "Command: help" << '\n';
+        cout << "Command: " << style::bold << "help" << style::reset <<'\n';
         cout << "   Print this menu" << '\n';
-        cout << "Command: clear" << '\n';
+        cout << "Command: " << style::bold << "clear" << style::reset <<'\n';
         cout << "   Clear the screen" << '\n';
-        cout << "Command: quit\n";
+        cout << "Command: " << style::bold << "quit" << style::reset <<'\n';
         cout << "   Quit the application\n";
     }
 }
@@ -394,8 +395,8 @@ namespace dbm
                         string tmp;
                         cin >> tmp;
                         attr.push_back(tmp);
-                    }
                     db.editByAttributes(it.first, attr);
+                    }
                     break;
                 }
                 case Quantity:
@@ -472,31 +473,32 @@ namespace dbm
     }
     void help()
     {
-        cout << "Command: insert" << '\n';
+        using rang::style;
+        cout << "Command: " << style::bold << "insert" << style::reset <<'\n';
         cout << "   Insert Vehicle Data\n";
-        cout << "Command: search" << '\n';
+        cout << "Command: " << style::bold << "search" << style::reset <<'\n';
         cout << "   Get a sorted Vehicle data by various attributes such as company, model etc\n";
-        cout << "Command: edit" << '\n';
+        cout << "Command: " << style::bold << "edit" << style::reset <<'\n';
         cout << "   Edit Vehicle Data\n";
-        cout << "Command: del" << '\n';
+        cout << "Command: " << style::bold << "del" << style::reset <<'\n';
         cout << "   Delete Vehicle Entry\n";
-        cout << "Command: disp" << '\n';
+        cout << "Command: " << style::bold << "disp" << style::reset <<'\n';
         cout << "   Displays all records" << '\n';
-        cout << "Command: undo\n";
+        cout << "Command: " << style::bold << "undo" << style::reset <<'\n';
         cout << "   Un-does a change\n";
-        cout << "Command: redo\n";
+        cout << "Command: " << style::bold << "redo" << style::reset <<'\n';
         cout << "   Re-does an undone change\n";
-        cout << "Command: load\n";
+        cout << "Command: " << style::bold << "load" << style::reset <<'\n';
         cout << "   Tries to load from a file\n";
-        cout << "Command: save\n";
+        cout << "Command: " << style::bold << "save" << style::reset <<'\n';
         cout << "   Tries to save current database in a file\n";
-        cout << "Command: up" << '\n';
+        cout << "Command: " << style::bold << "up" << style::reset <<'\n';
         cout << "   Go up a menu\n";
-        cout << "Command: help" << '\n';
+        cout << "Command: " << style::bold << "help" << style::reset <<'\n';
         cout << "   Print this menu" << '\n';
-        cout << "Command: clear" << '\n';
+        cout << "Command: " << style::bold << "clear" << style::reset <<'\n';
         cout << "   Clear the screen" << '\n';
-        cout << "Command: quit" << '\n';
+        cout << "Command: " << style::bold << "quit" << style::reset <<'\n';
         cout << "   Quit the application" << '\n';
     }
 }
@@ -513,15 +515,16 @@ namespace rev
 {
     void help()
     {
-        cout << "Command: sell" << '\n';
+        using rang::style;
+        cout << "Command: " << style::bold << "sell" << style::reset <<'\n';
         cout << "   Sell vehicle(s)" << '\n';
-        cout << "Command: load\n";
+        cout << "Command: " << style::bold << "load" << style::reset <<'\n';
         cout << "   Tries to load from a file\n";
-        cout << "Command: save\n";
+        cout << "Command: " << style::bold << "save" << style::reset <<'\n';
         cout << "   Tries to save current database in a file\n";
-        cout << "Command: clear" << '\n';
+        cout << "Command: " << style::bold << "clear" << style::reset <<'\n';
         cout << "   Clear the screen" << '\n';
-        cout << "Command: up" << '\n';
+        cout << "Command: " << style::bold << "up" << style::reset <<'\n';
         cout << "   Go up a menu\n";
     }
 
@@ -583,7 +586,7 @@ void dbms_menu()
         try
         {
             std::string choice;
-            cout << "dbms> ";
+            cout << rang::style::bold << rang::fg::green <<  "dbms> " << rang::style::reset;
             cin >> choice;
             switch (dbmsCases.at(choice))
             {
@@ -682,13 +685,13 @@ void rev_menu()
         {"load", load},
         {"clear", clear},
         {"up", up}};
-    std::cout << "Type 'help' to get a list of all valid commands\n";
+    std::cout << rang::style::bold << "Type 'help' to get a list of all valid commands\n" << rang::style::reset;
     while (active)
     {
         try
         {
             string choice;
-            cout << "revenue> ";
+            cout << rang::style::bold << rang::fg::green <<  "revenue> " << rang::style::reset;
             cin >> choice;
             switch (revCases.at(choice))
             {
@@ -770,7 +773,7 @@ void main_menu()
         try
         {
             string choice;
-            cout << "ams> ";
+            cout << rang::style::bold << rang::fg::green <<  "ams> " << rang::style::reset;
             cin >> choice;
             switch (mainCases.at(choice))
             {
