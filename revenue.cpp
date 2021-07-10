@@ -1,9 +1,6 @@
 #include "revenue.h"
 #include "classes.h"
 #include <fstream>
-#include <iomanip>
-#include <iostream>
-
 
 using namespace std;
 
@@ -17,31 +14,28 @@ std ::unordered_map<std ::string, double> Revenue ::getProfit() const
 {
     return m_profit;
 }
-void Revenue ::calcRevenue(DataIter const& it, long const& c_quantity)
+double Revenue::getGst() const
+{
+    return m_gst;
+} 
+double Revenue::getRoadTax() const 
+{
+    return m_roadtax;
+}
+double Revenue ::calcRevenue(DataIter const& it, long const& c_quantity)
 {
     double basePrice = it->getCost();
     double profitPercent = it->getProfitMargin();
+    double finalCost;
     profitPercent /= 100;
     finalCost += (basePrice) + (basePrice * m_gst) + (basePrice * m_roadtax) + (basePrice * profitPercent);
     finalCost *= c_quantity;
     m_sales[it->getCompany()] += finalCost;
     m_profit[it->getCompany()] += (basePrice * profitPercent);
+    if(it->getQuantity() < c_quantity)
+        return 0;
     editByQuantity<0, 1>(it, it->getQuantity() - c_quantity);
-}
-void Revenue ::dispRev(std ::unordered_map<std ::string, double> const& sales, std ::unordered_map<std ::string, double> const& profit)
-{
-    cout << "------------------SALES----------------------\n";
-    cout << setw(15) << "COMAPANY NAME" << setw(15) << "SALES" << '\n';
-    for (auto const iter : sales)
-    {
-        cout << setw(15) << iter.first << setw(15) << iter.second << '\n';
-    }
-    cout << "------------------PROFIT----------------------\n";
-    cout << setw(15) << "COMAPANY NAME" << setw(15) << "PROFIT" << '\n';
-    for (auto const iter : profit)
-    {
-        cout << setw(15) << iter.first << setw(15) << iter.second << '\n';
-    }
+    return finalCost;
 }
 bool Revenue::save(std::ostream& os)
 {
@@ -76,7 +70,7 @@ bool Revenue::load(std::istream& is)
     {
         string temp;
         std::getline(is >> std::ws, temp);
-        if(temp.back() == '\r')
+        if (temp.back() == '\r')
             temp.pop_back();
         return temp;
     };

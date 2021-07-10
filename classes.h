@@ -17,7 +17,7 @@ protected:
     std::string m_company;
     std::string m_modelName;
     std::vector<std::string> m_attributes; // only 3 attributes -> color, wheel size and milage
-    long m_quantity;
+    unsigned long m_quantity;
     double m_cost;
     double m_profitMargin;
 
