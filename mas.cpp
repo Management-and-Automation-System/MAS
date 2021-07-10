@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <map>
 #include <csignal>
+#include <stdexcept>
 #include "revenue.h"
 #include "classes.h"
 
@@ -866,8 +867,9 @@ int main()
         {
             main_menu();
         }
-        catch (...)
+        catch (std::out_of_range &e)
         {
-        };
+            cout << "Invalid input, type \"help\" to view a list of all valid commands\n";
+        }
     }
 }

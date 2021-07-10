@@ -67,38 +67,35 @@ bool Revenue::load(std::istream& is)
     m_sales.clear();
     if (!dbms::load(is))
     {
-        cout << "RETUEN\n";
         return false;
     }
 
     m_sales.clear();
     m_profit.clear();
-    auto getline = [&]()
+    auto getLine = [&]()
     {
         string temp;
-        std::getline(is, temp);
+        std::getline(is >> std::ws, temp);
+        if(temp.back() == '\r')
+            temp.pop_back();
         return temp;
     };
     int sales_size;
     int profit_size;
     decltype(m_sales) sales;
     decltype(m_profit) profit;
-    sales_size = stoi(getline());
-    profit_size = stoi(getline());
+    sales_size = stoi(getLine());
     for (int i = 0; i < sales_size; ++i)
     {
-        cin >> ws;
-        auto first = getline();
-        cin >> ws;
-        auto second = stod(getline());
+        auto first = getLine();
+        auto second = stod(getLine());
         sales[first] = second;
     }
+    profit_size = stoi(getLine());
     for (int i = 0; i < profit_size; ++i)
     {
-        cin >> ws;
-        auto first = getline();
-        cin >> ws;
-        auto second = stod(getline());
+        auto first = getLine();
+        auto second = stod(getLine());
         profit[first] = second;
     }
     m_sales = sales;

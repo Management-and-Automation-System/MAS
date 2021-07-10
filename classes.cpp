@@ -229,12 +229,11 @@ bool dbms::load(std::istream &is)
         auto getline = [&]()
         {
             string result;
-            std::getline(is, result);
+            std::getline(is >> std::ws, result);
             if(result.back() == '\r')
                 result.pop_back();
             return result;
         };
-        is >> ws;
         if (is.eof())
             break;
         std::string comp, model;

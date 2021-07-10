@@ -39,6 +39,7 @@ public:
     void setCost(double const &);
     void setProfitMargin(double const &);
     bool operator==(Vehicle const &other) const;
+    virtual ~Vehicle() = default;
 };
 
 class History : public Vehicle
@@ -51,6 +52,7 @@ class History : public Vehicle
 public:
     History();
     History(std::list<Vehicle>::iterator, char, std::list<Vehicle>::iterator = std::list<Vehicle>::iterator());
+    virtual ~History() = default;
 };
 
 class dbms
