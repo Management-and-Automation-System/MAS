@@ -24,18 +24,20 @@ double Revenue::getRoadTax() const
 }
 double Revenue ::calcRevenue(DataIter const& it, long const& c_quantity)
 {
-    double basePrice = it->getCost();
-    double profitPercent = it->getProfitMargin();
-    double finalCost;
-    profitPercent /= 100;
-    finalCost += (basePrice) + (basePrice * m_gst) + (basePrice * m_roadtax) + (basePrice * profitPercent);
-    finalCost *= c_quantity;
-    m_sales[it->getCompany()] += finalCost;
-    m_profit[it->getCompany()] += (basePrice * profitPercent);
     if(it->getQuantity() < c_quantity)
         return 0;
+    double basePrice = getSalePrice(it);
+    double finalCost;
+    finalCost += (basePrice) + (basePrice * m_gst) + (basePrice * m_roadtax);
+    finalCost *= c_quantity;
+    m_sales[it->getCompany()] += finalCost;
+    m_profit[it->getCompany()] += (basePrice - it->getCost());
     editByQuantity<0, 1>(it, it->getQuantity() - c_quantity);
     return finalCost;
+}
+double Revenue::getSalePrice(DataIter const & it) const
+{
+    return it->getCost() + (it->getCost() * it->getProfitMargin()/100);
 }
 bool Revenue::save(std::ostream& os)
 {

@@ -17,6 +17,7 @@ public:
     double calcRevenue(DataIter const &, long const &); // call the func -> editByQuantity(Dataiter, updated quantity)
     double getGst() const;
     double getRoadTax() const;
+    double getSalePrice(DataIter const &) const;
     bool load(std::string const &) override;
     bool save(std::string const &) override;
     bool load(std::istream &) override;

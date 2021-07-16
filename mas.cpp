@@ -23,7 +23,6 @@ string getLine()
     getline(cin, result);
     return result;
 }
-
 Vehicle createObject()
 {
     vector<string> attr;
@@ -66,11 +65,10 @@ void display(DataIterVec const& n_obj)
 {
     if (!n_obj.empty())
     {
-        cout.precision(20);
         const int spaceGap = 20;
         auto seperator = [=]()
         {
-            for (int i = 0; i < 8; ++i)
+            for (int i = 0; i < 9; ++i)
             {
                 cout << '+';
                 for (int j = 0; j < spaceGap + 1; ++j)
@@ -87,9 +85,11 @@ void display(DataIterVec const& n_obj)
              << right << "| "
              << setw(spaceGap) << left << "Model"
              << right << "| "
-             << setw(spaceGap) << left << "Cost"
+             << setw(spaceGap) << left << "Cost(in Rs)"
              << right << "| "
              << setw(spaceGap) << left << "Profit Margin"
+             << right << "| "
+             << setw(spaceGap) << left << "Instock"
              << right << "| "
              << setw(spaceGap) << left << "Color"
              << right << "| "
@@ -113,6 +113,8 @@ void display(DataIterVec const& n_obj)
                  << setw(spaceGap) << left << obj->getCost()
                  << right << "| "
                  << setw(spaceGap) << left << obj->getProfitMargin()
+                 << right << "| "
+                 << setw(spaceGap) << left << obj->getQuantity()
                  << right << "| ";
             for (auto it : obj->getAttributes())
                 cout << setw(spaceGap) << left << it
@@ -338,7 +340,7 @@ std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = 
         }
         catch (std::out_of_range& e)
         {
-            cout << "Entered Command is invalid, type 'help' for list of valid commands. Type 'up' to return to previous menu\n";
+            cout << rang::fg::red << "Entered Command is invalid, type 'help' for list of valid commands.\nType 'up' to return to previous menu\n";
             redo = 1;
         }
         if (redo)
@@ -415,12 +417,12 @@ void edit()
     do
     {
         redo = 0;
+        cout << "Type 'help' to print fields available for editing\n";
+        cout << rang::style::bold << rang::fg::green << "edit> " << rang::style::reset;
+        string input;
+        cin >> input;
         try
         {
-            cout << "Type 'help' to print fields available for editing\n";
-            cout << rang::style::bold << rang::fg::green << "edit> " << rang::style::reset;
-            string input;
-            cin >> input;
             switch (editCases.at(input))
             {
             case Company:
@@ -559,12 +561,58 @@ namespace rev
 {
 void receipt(DataIter const& n_obj, int const& quantity, double finalCost)
 {
-    cout << setw(10) << "COMPANY" << setw(15) << "MODEL" << setw(15) << "BASE PRICE" << setw(15) << "QUANTITY"
-         << setw(15) << "GST" << setw(15) << "ROAD TAX" << setw(15)
-         << "OTHER TAXES" << setw(15) << "FINAL COST" << '\n';
-    cout << setw(10) << n_obj->getCompany() << setw(15) << n_obj->getModelName()
-         << setw(15) << n_obj->getCost() << setw(15) << quantity << setw(15) << db.getGst() * 100 << setw(15)
-         << db.getRoadTax() * 100 << setw(15) << n_obj->getProfitMargin() << setw(15) << finalCost << '\n';
+    const int spaceGap = 20;
+    auto seperator = [=]()
+    {
+        for (int i = 0; i < 8; ++i)
+        {
+            cout << '+';
+            for (int j = 0; j < spaceGap + 1; ++j)
+                cout << '-';
+        }
+        cout << "+\n";
+    };
+    cout << rang::style::bold;
+    seperator();
+    cout << right << "| "
+         << setw(spaceGap) << left << "Quantity"
+         << right << "| "
+         << setw(spaceGap) << left << "Company"
+         << right << "| "
+         << setw(spaceGap) << left << "Model"
+         << right << "| "
+         << setw(spaceGap) << left << "Price(in Rs)"
+         << right << "| "
+         << setw(spaceGap) << left << "Sub Total"
+         << right << "| "
+         << setw(spaceGap) << left << "GST(in %)"
+         << right << "| "
+         << setw(spaceGap) << left << "Road Tax(in %)"
+         << right << "| "
+         << setw(spaceGap) << left << "Total(in Rs)"
+         << right << "| "
+         << "\n";
+    seperator();
+    cout << rang::style::reset;
+    cout << right << "| "
+         << setw(spaceGap) << left << quantity
+         << right << "| "
+         << setw(spaceGap) << left << n_obj->getCompany()
+         << right << "| "
+         << setw(spaceGap) << left << n_obj->getModelName()
+         << right << "| "
+         << setw(spaceGap) << left << db.getSalePrice(n_obj)
+         << right << "| "
+         << setw(spaceGap) << left << db.getSalePrice(n_obj) * quantity
+         << right << "| "
+         << setw(spaceGap) << left << db.getGst() * 100
+         << right << "| "
+         << setw(spaceGap) << left << db.getRoadTax() * 100
+         << right << "| "
+         << setw(spaceGap) << left << finalCost
+         << right << "| "
+         << "\n";
+    seperator();
 }
 
 void help()
@@ -572,6 +620,8 @@ void help()
     using rang::style;
     cout << "Command: " << style::bold << "sell" << style::reset << '\n';
     cout << "   Sell vehicle(s)" << '\n';
+    cout << "Command: " << style::bold << "disp" << style::reset << '\n';
+    cout << "   Display Daybook" << '\n';
     cout << "Command: " << style::bold << "load" << style::reset << '\n';
     cout << "   Tries to load from a file\n";
     cout << "Command: " << style::bold << "save" << style::reset << '\n';
@@ -603,17 +653,40 @@ void sell() //Check This Out!
 
 void disp()
 {
-    cout << "------------------SALES----------------------\n";
-    cout << setw(15) << "COMAPANY NAME" << setw(15) << "SALES" << '\n';
+    const int spaceGap = 20;
+    auto seperator = [=]()
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            cout << '+';
+            for (int j = 0; j < spaceGap + 1; ++j)
+                cout << '-';
+        }
+        cout << "+\n";
+    };
+    cout << rang::style::bold;
+    seperator();
+    cout << right << "| "
+         << setw(spaceGap) << left << "Comapny"
+         << right << "| "
+         << setw(spaceGap) << left << "Sales"
+         << right << "| "
+         << setw(spaceGap) << left << "Profit"
+         << right << "| "
+         << "\n";
+    seperator();
+    cout << rang::style::reset;
     for (auto const iter : db.getSales())
     {
-        cout << setw(15) << iter.first << setw(15) << iter.second << '\n';
-    }
-    cout << "------------------PROFIT----------------------\n";
-    cout << setw(15) << "COMAPANY NAME" << setw(15) << "PROFIT" << '\n';
-    for (auto const iter : db.getProfit())
-    {
-        cout << setw(15) << iter.first << setw(15) << iter.second << '\n';
+        cout << right << "| "
+             << setw(spaceGap) << left << iter.first
+             << right << "| "
+             << setw(spaceGap) << left << iter.second
+             << right << "| "
+             << setw(spaceGap) << left << db.getProfit().at(iter.first)
+             << right << "| "
+             << "\n";
+        seperator();
     }
 }
 }
@@ -733,7 +806,7 @@ void dbms_menu()
         }
         catch (std::out_of_range& e)
         {
-            cout << "Invalid input, type 'help' to get a list of all valid commands\n";
+            cout << rang::fg::red << "Invalid input, type 'help' to get a list of all valid commands\n";
         }
     }
 }
@@ -811,7 +884,7 @@ void rev_menu()
         }
         catch (std::out_of_range& e)
         {
-            cout << "Invalid input, type 'help' to get a list of all valid commands\n";
+            cout << rang::fg::red << "Invalid input, type 'help' to get a list of all valid commands\n";
         }
     }
 }
@@ -908,7 +981,7 @@ void main_menu()
         }
         catch (std::out_of_range& e)
         {
-            cout << "Invalid command, type 'help' to get a list of all valid commands\n";
+            cout << rang::fg::red << "Invalid command, type 'help' to get a list of all valid commands\n";
         }
         flushCin();
     }
@@ -945,6 +1018,7 @@ void signalHandler(int signum)
 int main()
 {
     signal(SIGINT, signalHandler);
+    cout.precision(15);
     while (1 && !cin.eof())
     {
         try
