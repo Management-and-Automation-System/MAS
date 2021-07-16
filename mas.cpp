@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
-#include <stdexcept>
+#include <ostream>
 
 using namespace std;
 Revenue db;
@@ -16,27 +16,41 @@ void signalHandler(int);
 void flushCin()
 {
 }
+string getLine()
+{
+    string result;
+    cin >> ws;
+    getline(cin, result);
+    return result;
+}
 
 Vehicle createObject()
 {
-    string company, model;
     vector<string> attr;
     long quantity;
     double cost, prof;
     cout << "Enter Company: ";
-    cin >> company;
-    flushCin();
+    auto company = getLine();
     cout << "Enter Model: ";
-    cin >> model;
-    flushCin();
-    cout << "Enter Attributes(Color, Wheel size, Milage): ";
+    auto model = getLine();
+    cout << "Enter Attributes:\n";
     for (int i = 0; i < ATTR; i++)
     {
-        string s;
-        cin >> s;
+        switch (i)
+        {
+        case 0:
+            cout << "\tColor: ";
+            break;
+        case 1:
+            cout << "\tWheel Size: ";
+            break;
+        case 2:
+            cout << "\tMileage: ";
+            break;
+        }
+        auto s = getLine();
         attr.push_back(s);
     }
-    flushCin();
     cout << "Enter Quantity: ";
     cin >> quantity;
     flushCin();
@@ -50,27 +64,62 @@ Vehicle createObject()
 }
 void display(DataIterVec const& n_obj)
 {
-    int i = 1;
     if (!n_obj.empty())
     {
+        cout.precision(20);
+        const int spaceGap = 20;
+        auto seperator = [=]()
+        {
+            for (int i = 0; i < 8; ++i)
+            {
+                cout << '+';
+                for (int j = 0; j < spaceGap + 1; ++j)
+                    cout << '-';
+            }
+            cout << "+\n";
+        };
+        cout << rang::style::bold;
+        seperator();
+        cout << right << "| "
+             << setw(spaceGap) << left << "Sr No."
+             << right << "| "
+             << setw(spaceGap) << left << "Company"
+             << right << "| "
+             << setw(spaceGap) << left << "Model"
+             << right << "| "
+             << setw(spaceGap) << left << "Cost"
+             << right << "| "
+             << setw(spaceGap) << left << "Profit Margin"
+             << right << "| "
+             << setw(spaceGap) << left << "Color"
+             << right << "| "
+             << setw(spaceGap) << left << "Wheel Size"
+             << right << "| "
+             << setw(spaceGap) << left << "Mileage"
+             << right << "| "
+             << "\n";
+        seperator();
+        cout << rang::style::reset;
+        int count = 1;
         for (auto const& obj : n_obj)
         {
-            cout << setw(15) << "COMPANY" << setw(15) << "MODEL" << setw(15) << "QUANTITY" << setw(15) << "ATTRIBUTES\n";
-            cout << i++ << setw(15) << obj->getCompany() << setw(15) << obj->getModelName() << setw(15) << obj->getQuantity();
-            int flag = 0;
-            for (auto& x : obj->getAttributes())
-            {
-                if (!flag)
-                {
-                    cout << setw(10) << x;
-                    flag = 1;
-                }
-                else
-                {
-                    cout << setw(10) << x;
-                }
-            }
+            cout << right << "| "
+                 << setw(spaceGap) << left << count
+                 << right << "| "
+                 << setw(spaceGap) << left << obj->getCompany()
+                 << right << "| "
+                 << setw(spaceGap) << left << obj->getModelName()
+                 << right << "| "
+                 << setw(spaceGap) << left << obj->getCost()
+                 << right << "| "
+                 << setw(spaceGap) << left << obj->getProfitMargin()
+                 << right << "| ";
+            for (auto it : obj->getAttributes())
+                cout << setw(spaceGap) << left << it
+                     << right << "| ";
             cout << '\n';
+            seperator();
+            ++count;
         }
     }
     else
@@ -109,7 +158,7 @@ void load()
     }
     string filename;
     cout << "Enter the loadfile name: ";
-    cin >> filename;
+    filename = getLine();
     if (db.load(filename))
         cout << "Loaded Successfully\n";
     else
@@ -230,7 +279,7 @@ std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = 
             {
                 string company;
                 cout << "Enter Company Name: ";
-                cin >> company;
+                company = getLine();
                 n_obj = db.searchByCompany(company);
                 break;
             }
@@ -238,7 +287,7 @@ std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = 
             {
                 string model;
                 cout << "Enter Model Name: ";
-                cin >> model;
+                model = getLine();
                 n_obj = db.searchByModel(model);
                 break;
             }
@@ -257,7 +306,7 @@ std::pair<DataIter, bool> search(int prompt_flg = 0, string const& prompt_msg = 
                 for (int i = 0; i < ATTR; i++)
                 {
                     string tmp;
-                    cin >> tmp;
+                    tmp = getLine();
                     temp.push_back(tmp);
                 }
                 n_obj = db.searchByAttribute(temp);
@@ -378,7 +427,7 @@ void edit()
             {
                 std::string comp;
                 cout << "Enter New Company Name: ";
-                cin >> comp;
+                comp = getLine();
                 db.editByCompany(it.first, comp);
                 break;
             }
@@ -386,7 +435,7 @@ void edit()
             {
                 std::string model;
                 cout << "Enter New Model Name: ";
-                cin >> model;
+                model = getLine();
                 db.editByModel(it.first, model);
                 break;
             }
@@ -397,7 +446,7 @@ void edit()
                 for (int i = 0; i < ATTR; i++)
                 {
                     string tmp;
-                    cin >> tmp;
+                    tmp = getLine();
                     attr.push_back(tmp);
                     db.editByAttributes(it.first, attr);
                 }
