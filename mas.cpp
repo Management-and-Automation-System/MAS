@@ -1,3 +1,9 @@
+#if defined(__unix__) || defined(__unix) || defined(__linux__)
+#define POSIX
+#elif defined(WIN32) || defined(_WIN32) || defined(_WIN64)
+#define WINDOWS
+#endif
+
 #include "classes.h"
 #include "rang.h"
 #include "revenue.h"
@@ -23,6 +29,13 @@ string getLine()
     getline(cin, result);
     return result;
 }
+
+void clrscr()
+{
+    //cout << "\033[2J\033[1;1H";
+    cout << "\e[H\e[2J\e[3J";
+}
+
 Vehicle createObject()
 {
     vector<string> attr;
@@ -165,10 +178,6 @@ void load()
         cout << "Loaded Successfully\n";
     else
         cout << "Load was not successful, some error occured\n";
-}
-void clrscr()
-{
-    cout << "\033[2J\033[1;1H";
 }
 void undo()
 {
@@ -635,11 +644,11 @@ void help()
 void sell() //Check This Out!
 {
     auto it = dbm::search(1, "Which Vehicle Would You Like to buy(Serial Number): ");
-    long quantity;
-    cout << "How many would you like to buy: ";
-    cin >> quantity;
     if (it.second)
     {
+        cout << "How many would you like to buy: ";
+        long quantity;
+        cin >> quantity;
         auto finalCost = db.calcRevenue(it.first, quantity);
         if (finalCost == 0)
             cout << "Sorry! It seems we don't have the required quantity of specified Automobiles in stock.\n";
@@ -648,6 +657,10 @@ void sell() //Check This Out!
             cout << "Here is your receipt:\n";
             receipt(it.first, quantity, finalCost);
         }
+    }
+    else
+    {
+        cout << "Returning to the previous menu...\n";
     }
 }
 
