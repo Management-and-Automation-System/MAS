@@ -75,7 +75,7 @@ bool Vehicle::operator==(Vehicle const &other) const
 }
 
 History::History() = default;
-History::History(std::list<Vehicle>::iterator absPos, char deletiness, std::list<Vehicle>::iterator oldPos )
+History::History(std::list<Vehicle>::iterator absPos, char deletiness, std::list<Vehicle>::iterator oldPos)
     : Vehicle(*absPos), m_deletiness(deletiness), m_absPos(absPos), m_oldPos(oldPos) {}
 dbms::DataIterVec dbms::extractAll()
 {
@@ -140,7 +140,7 @@ dbms ::DataIterVec dbms ::searchByRange(double const &lb, double const &ub)
     DataIterVec result;
     for (auto iter = m_data.begin(); iter != m_data.end(); iter++)
     {
-        if (iter->getQuantity() >= lb && iter->getQuantity() <= ub)
+        if (iter->getCost() >= lb && iter->getCost() <= ub)
             result.push_back(iter);
     }
     return result;
@@ -230,7 +230,7 @@ bool dbms::load(std::istream &is)
         {
             string result;
             std::getline(is >> std::ws, result);
-            if(result.back() == '\r')
+            if (result.back() == '\r')
                 result.pop_back();
             return result;
         };
