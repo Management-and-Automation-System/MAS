@@ -69,25 +69,25 @@ public:
     using DataIterVec = std::vector<DataIter>;
 
     //Templates
-    template <bool _Redoing = 0 , bool _Noproc = 0>
+    template <bool _Redoing = 0, bool _Noproc = 0>
     DataIter insert(Vehicle const &);
 
-    template <bool _Redoing = 0 , bool _Noproc = 0>
+    template <bool _Redoing = 0, bool _Noproc = 0>
     DataIter edit(DataIter, Vehicle const &);
-    template <bool _Redoing = 0 , bool _Noproc = 0>
+    template <bool _Redoing = 0, bool _Noproc = 0>
     DataIter editByCompany(DataIter, std::string const &);
-    template <bool _Redoing = 0 , bool _Noproc = 0>
+    template <bool _Redoing = 0, bool _Noproc = 0>
     DataIter editByModel(DataIter, std::string const &);
-    template <bool _Redoing = 0 , bool _Noproc = 0>
+    template <bool _Redoing = 0, bool _Noproc = 0>
     DataIter editByAttributes(DataIter, std::vector<std::string> const &);
-    template <bool _Redoing = 0 , bool _Noproc = 0>
+    template <bool _Redoing = 0, bool _Noproc = 0>
     DataIter editByQuantity(DataIter, long const &);
-    template <bool _Redoing = 0 , bool _Noproc = 0>
+    template <bool _Redoing = 0, bool _Noproc = 0>
     DataIter editProfitMargin(DataIter, double const &);
-    template <bool _Redoing = 0 , bool _Noproc = 0>
+    template <bool _Redoing = 0, bool _Noproc = 0>
     DataIter editByCost(DataIter, double const &);
 
-    template <bool _Redoing = 0 , bool _Noproc = 0>
+    template <bool _Redoing = 0, bool _Noproc = 0>
     DataIter toDelete(DataIter);
 
     //Search Functions
@@ -98,7 +98,7 @@ public:
     DataIterVec searchByAttribute(std::vector<std::string> const &);
     DataIterVec searchByQuantity(long const &);
     DataIterVec searchByRange(double const &, double const &);
-    
+
     //Iteration
     DataIter begin();
     DataIter end();
@@ -117,7 +117,7 @@ public:
 
 //Template Implementations
 
-template <bool _Redoing , bool _Noproc >
+template <bool _Redoing, bool _Noproc>
 dbms::DataIter dbms::insert(Vehicle const &vehicle)
 {
     m_data.push_back(vehicle);
@@ -131,7 +131,7 @@ dbms::DataIter dbms::insert(Vehicle const &vehicle)
     return temp;
 }
 
-template <bool _Redoing , bool _Noproc>
+template <bool _Redoing, bool _Noproc>
 dbms::DataIter dbms::edit(DataIter toChange, Vehicle const &change)
 {
     if (!_Noproc)
@@ -145,49 +145,49 @@ dbms::DataIter dbms::edit(DataIter toChange, Vehicle const &change)
         *toChange = change;
     return toChange;
 }
-template <bool _Redoing , bool _Noproc>
+template <bool _Redoing, bool _Noproc>
 dbms::DataIter dbms::editByCompany(DataIter toChange, std::string const &chComapny)
 {
     Vehicle temp(*toChange);
     temp.setCompany(chComapny);
-    return edit<_Redoing , _Noproc>(toChange, temp);
+    return edit<_Redoing, _Noproc>(toChange, temp);
 }
-template <bool _Redoing , bool _Noproc>
+template <bool _Redoing, bool _Noproc>
 dbms::DataIter dbms::editByModel(DataIter toChange, std::string const &chModel)
 {
     Vehicle temp(*toChange);
     temp.setModel(chModel);
-    return edit<_Redoing , _Noproc>(toChange, temp);
+    return edit<_Redoing, _Noproc>(toChange, temp);
 }
-template <bool _Redoing , bool _Noproc>
+template <bool _Redoing, bool _Noproc>
 dbms::DataIter dbms::editByAttributes(DataIter toChange, std::vector<std::string> const &chComapny)
 {
     Vehicle temp(*toChange);
     temp.setAttributes(chComapny);
-    return edit<_Redoing , _Noproc>(toChange, temp);
+    return edit<_Redoing, _Noproc>(toChange, temp);
 }
-template <bool _Redoing , bool _Noproc>
+template <bool _Redoing, bool _Noproc>
 dbms::DataIter dbms::editByQuantity(DataIter toChange, long const &chComapny)
 {
     Vehicle temp(*toChange);
     temp.setQuantity(chComapny);
-    return edit<_Redoing , _Noproc>(toChange, temp);
+    return edit<_Redoing, _Noproc>(toChange, temp);
 }
-template <bool _Redoing , bool _Noproc>
+template <bool _Redoing, bool _Noproc>
 dbms ::DataIter dbms::editProfitMargin(DataIter toChange, double const &newMargin)
 {
     Vehicle temp(*toChange);
     temp.setProfitMargin(newMargin);
-    return edit<_Redoing , _Noproc>(toChange, temp);
+    return edit<_Redoing, _Noproc>(toChange, temp);
 }
-template <bool _Redoing , bool _Noproc>
+template <bool _Redoing, bool _Noproc>
 dbms ::DataIter dbms::editByCost(DataIter toChange, double const &newCost)
 {
     Vehicle temp(*toChange);
     temp.setCost(newCost);
-    return edit<_Redoing , _Noproc>(toChange, temp);
+    return edit<_Redoing, _Noproc>(toChange, temp);
 }
-template <bool _Redoing , bool _Noproc>
+template <bool _Redoing, bool _Noproc>
 dbms::DataIter dbms::toDelete(DataIter toDel)
 {
     if (!_Noproc)

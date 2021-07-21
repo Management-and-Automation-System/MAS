@@ -4,8 +4,8 @@
 
 using namespace std;
 
-Revenue::Revenue(double const& gst, double const& roadtax)
-    : m_gst(gst), m_roadtax(roadtax) {};
+Revenue::Revenue(double const &gst, double const &roadtax)
+    : m_gst(gst), m_roadtax(roadtax){};
 std ::unordered_map<std ::string, double> Revenue ::getSales() const
 {
     return m_sales;
@@ -17,14 +17,14 @@ std ::unordered_map<std ::string, double> Revenue ::getProfit() const
 double Revenue::getGst() const
 {
     return m_gst;
-} 
-double Revenue::getRoadTax() const 
+}
+double Revenue::getRoadTax() const
 {
     return m_roadtax;
 }
-double Revenue ::calcRevenue(DataIter const& it, long const& c_quantity)
+double Revenue ::calcRevenue(DataIter const &it, long const &c_quantity)
 {
-    if(it->getQuantity() < c_quantity)
+    if (it->getQuantity() < c_quantity)
         return 0;
     double basePrice = getSalePrice(it);
     double finalCost;
@@ -35,11 +35,11 @@ double Revenue ::calcRevenue(DataIter const& it, long const& c_quantity)
     editByQuantity<0, 1>(it, it->getQuantity() - c_quantity);
     return finalCost;
 }
-double Revenue::getSalePrice(DataIter const & it) const
+double Revenue::getSalePrice(DataIter const &it) const
 {
-    return it->getCost() + (it->getCost() * it->getProfitMargin()/100);
+    return it->getCost() + (it->getCost() * it->getProfitMargin() / 100);
 }
-bool Revenue::save(std::ostream& os)
+bool Revenue::save(std::ostream &os)
 {
     dbms::save(os);
     os << m_sales.size() << '\n';
@@ -57,7 +57,7 @@ bool Revenue::save(std::ostream& os)
     return true;
 }
 
-bool Revenue::load(std::istream& is)
+bool Revenue::load(std::istream &is)
 {
     m_profit.clear();
     m_sales.clear();
@@ -99,12 +99,12 @@ bool Revenue::load(std::istream& is)
     return true;
 }
 
-bool Revenue::load(std::string const& filename)
+bool Revenue::load(std::string const &filename)
 {
     std::ifstream is(filename);
     return load(is);
 }
-bool Revenue::save(std::string const& filename)
+bool Revenue::save(std::string const &filename)
 {
     std::ofstream os(filename);
     return save(os);

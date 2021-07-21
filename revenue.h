@@ -4,7 +4,7 @@
 #include "classes.h"
 #include <list>
 #include <unordered_map>
-class Revenue : public dbms
+class Revenue : public dbms, public Vehicle
 {
     std ::unordered_map<std ::string, double> m_sales;
     std ::unordered_map<std ::string, double> m_profit;
