@@ -1,4 +1,3 @@
-
 #include "revenue.h"
 #include "classes.h"
 #include <fstream>
@@ -34,8 +33,6 @@ double Revenue ::calcRevenue(DataIter const &it, long const &c_quantity)
     m_sales[it->getCompany()] += finalCost;
     m_profit[it->getCompany()] += (basePrice - it->getCost());
     editByQuantity<0, 1>(it, it->getQuantity() - c_quantity);
-    if(it->getQuantity() == 0)
-        toDelete<0,1>(it);
     return finalCost;
 }
 double Revenue::getSalePrice(DataIter const &it) const

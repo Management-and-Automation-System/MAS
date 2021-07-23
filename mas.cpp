@@ -1,6 +1,8 @@
 #include "rang.h"
 #include "classes.h"
 #include "revenue.h"
+#include "classes.cpp"
+#include "revenue.cpp"
 #include <algorithm>
 #include <csignal>
 #include <iomanip>
@@ -12,9 +14,6 @@ Revenue db;
 using DataIter = dbms::DataIter;
 using DataIterVec = dbms::DataIterVec;
 void signalHandler(int);
-void flushCin()
-{
-}
 string getLine()
 {
     string result;
@@ -22,13 +21,6 @@ string getLine()
     getline(cin, result);
     return result;
 }
-
-void clrscr()
-{
-    //cout << "\033[2J\033[1;1H";
-    cout << "\e[H\e[2J\e[3J";
-}
-
 Vehicle createObject()
 {
     vector<string> attr;
@@ -58,13 +50,13 @@ Vehicle createObject()
     }
     cout << "Enter Quantity: ";
     cin >> quantity;
-    flushCin();
+
     cout << "Enter Cost: ";
     cin >> cost;
-    flushCin();
+
     cout << "Enter Profit Margin: ";
     cin >> prof;
-    flushCin();
+
     return Vehicle(company, model, attr, quantity, cost, prof);
 }
 void display(DataIterVec const &n_obj)
@@ -72,7 +64,7 @@ void display(DataIterVec const &n_obj)
     if (!n_obj.empty())
     {
         const int spaceGap = 15;
-        auto seperator = [=]()
+        auto seperator = [&]()
         {
             for (int i = 0; i < 9; ++i)
             {
@@ -154,7 +146,7 @@ void load()
         cin >> ans;
         ans = tolower(ans);
     }
-    flushCin();
+
     if (ans == 'y')
     {
         save();
@@ -171,6 +163,10 @@ void load()
         cout << "Loaded Successfully\n";
     else
         cout << "Load was not successful, some error occured\n";
+}
+void clrscr()
+{
+    cout << "\033[2J\033[1;1H";
 }
 void undo()
 {
@@ -375,7 +371,7 @@ namespace dbm
             }
             else
             {
-                flushCin();
+
                 cout << "Would you like to try again?(Y/N): ";
                 char ans;
                 cin >> ans;
@@ -399,7 +395,7 @@ namespace dbm
             cout << "Returning to previous menu\n";
             return;
         }
-        auto help = []()
+        auto help = [&]()
         {
             cout << "Enter which field to edit: \n";
             cout << "Fields to edit could be:\n  " << rang::style::bold << "      company\n        model\n        attributes\n        quantity\n        cost\n        margin\n        whole\n";
@@ -577,7 +573,7 @@ namespace rev
     void receipt(DataIter const &n_obj, int const &quantity, double finalCost)
     {
         const int spaceGap = 15;
-        auto seperator = [=]()
+        auto seperator = [&]()
         {
             for (int i = 0; i < 8; ++i)
             {
@@ -647,28 +643,24 @@ namespace rev
         cout << "   Go up a menu\n";
     }
 
-void sell() //Check This Out!
-{
-    auto it = dbm::search(1, "Which Vehicle Would You Like to buy(Serial Number): ");
-    if (it.second)
+    void sell()
     {
-        cout << "How many would you like to buy: ";
+        auto it = dbm::search(1, "Which Vehicle Would You Like to buy(Serial Number): ");
         long quantity;
-        cin >> quantity;
-        auto finalCost = db.calcRevenue(it.first, quantity);
-        if (finalCost == 0)
-            cout << "Sorry! It seems we don't have the required quantity of specified Automobiles in stock.\n";
-        else
+        if (it.second)
+        {
+            cout << "How many would you like to buy: ";
+            cin >> quantity;
+            auto finalCost = db.calcRevenue(it.first, quantity);
+            if (finalCost == 0)
+                cout << "Sorry! It seems we don't have the required quantity of specified Automobiles in stock.\n";
+            else
             {
                 cout << "Here is your receipt:\n";
                 receipt(it.first, quantity, finalCost);
             }
         }
-    else
-    {
-        cout << "No items selected. Returning to the previous menu...\n";
     }
-}
 
     void disp()
     {
@@ -820,7 +812,6 @@ void dbms_menu()
                 signalHandler(2);
             }
             }
-            flushCin();
         }
         catch (std::out_of_range &e)
         {
@@ -897,7 +888,6 @@ void rev_menu()
                 break;
             }
             }
-            flushCin();
         }
         catch (std::out_of_range &e)
         {
@@ -999,7 +989,6 @@ void main_menu()
         {
             cout << rang::fg::red << "Invalid command, type 'help' to get a list of all valid commands\n";
         }
-        flushCin();
     }
 }
 
@@ -1010,7 +999,7 @@ void signalHandler(int signum)
         char c;
         cout << "\nQuitting...\n"
              << "Would You like to save?(Y/N): ";
-        flushCin();
+
         cin >> c;
         c = tolower(c);
         bool redo = 0;
@@ -1030,7 +1019,6 @@ void signalHandler(int signum)
     }
     exit(signum);
 }
-
 int main()
 {
     signal(SIGINT, signalHandler);
